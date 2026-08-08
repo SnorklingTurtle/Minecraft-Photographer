@@ -26,6 +26,13 @@ public class RaycastUtil {
             if (isSolid(block.getType())) {
                 BlockFace face = determineFace(prev, block);
                 int lightLevel = block.getRelative(face).getLightLevel();
+
+                // Hack to avoid black pixels at block edges
+                if (lightLevel == 0)
+                {
+                    lightLevel = block.getRelative(face).getLightFromSky();
+                }
+
                 return new RayHit(block.getType(), face, d, lightLevel);
             }
 

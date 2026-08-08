@@ -84,10 +84,7 @@ public class CameraRenderer {
                             } else {
                                 c = shadedColor(ColorPalette.getBaseColor(hit.material), hit.face);
 
-                                // if (hit.lightLevel > 0)
-                                {
-                                    c = shadowColor(c, hit.lightLevel > 0 ? hit.lightLevel : 8);
-                                }
+                                c = shadowColor(c, hit.lightLevel);
                             }
 
                             accR += c.getRed();
@@ -124,10 +121,7 @@ public class CameraRenderer {
                     } else {
                         c = shadedColor(ColorPalette.getBaseColor(hit.material), hit.face);
 
-                        // if (hit.lightLevel > 0)
-                        {
-                            c = shadowColor(c, hit.lightLevel > 0 ? hit.lightLevel : 8);
-                        }
+                        c = shadowColor(c, hit.lightLevel);
                     }
 
                     rawR[px][py] = c.getRed();
@@ -296,7 +290,7 @@ public class CameraRenderer {
     private static Color shadowColor(Color color, double lightLevel) {
         // Minimum ambient factor so even unlit surfaces retain some color.
         // Maybe adjust MIN_AMBIENT (0.08 ≈ a barely visible surface).
-        final double MIN_AMBIENT = 0.08;
+        final double MIN_AMBIENT = 0.2;
         double factor = MIN_AMBIENT + (1.0 - MIN_AMBIENT) * (Math.max(0, lightLevel) / 15.0);
         return new Color(
                 clamp((int)(color.getRed()   * factor)),
