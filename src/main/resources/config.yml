@@ -1,0 +1,36 @@
+settings:
+  camera:
+    recipe:
+      ingredients:
+        I: IRON_INGOT
+        G: GLASS_PANE
+        T: GLOWSTONE_DUST
+        R: REDSTONE
+      shape:
+        - IGI
+        - ITI
+        - IRI
+      enabled: true
+    transparentWater: false
+    shadows: true
+    # Skin must be located at one of Mojangs/Minecrafts whitelisted domains.
+    # New skin will be applied to newly crafted cameras.
+    skinUrl: "https://textures.minecraft.net/texture/ded4781df856279522d844252eca79a6cc6f24a9baa89d293d829053fd9c9c"
+    # Lower number is more performant, but the picture will take longer to render
+    tracesPerTick: 256
+    # Lower number is more performant
+    renderDistance: 128
+    # Setting this to false will render the image from top to bottom instead
+    # of randomly. Rendering from top to bottom is slightly more performant,
+    # but the difference is insignificant.
+    renderRandomly: true
+  messages:
+    notready: '&cCamera is still loading, please wait.'
+    invfull: '&cYou cannot take a picture with a full inventory.'
+    delay: '&cPlease wait before taking another picture.'
+    nopaper: '&cYou must have paper in order to take a picture.'
+    cantfetch: '&cUnable to fetch picture.'
+    canttag: '&cUnable to tag picture. Hold it in your main hand and try again.'
+    tagused: '&cTag already used. Trying something else.'
+    enabled: true
+  debug: false

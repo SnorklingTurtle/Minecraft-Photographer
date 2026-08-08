@@ -1,0 +1,19 @@
+main: com.yourname.cameraplugin.CameraPlugin
+name: CameraPlugin
+version: 1.0.0
+description: Take photos!
+author: SkooterKurt
+api-version: 1.21
+softdepend: [Multiverse-Core]
+
+commands:
+  camera:
+    description: Camera plugin commands.
+    usage: /camera <help|aa|shade|shadow|dither|frame>
+    permission: cameraplugin.use
+
+permissions:
+  cameraplugin.use:
+    description: Allows using the camera item and command.
+    default: op
+
