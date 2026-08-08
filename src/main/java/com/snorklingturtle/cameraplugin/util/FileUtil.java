@@ -1,12 +1,11 @@
-package com.yourname.cameraplugin.util;
+package com.snorklingturtle.cameraplugin.util;
 
-import com.yourname.cameraplugin.CameraPlugin;
+import com.snorklingturtle.cameraplugin.CameraPlugin;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Properties;
 import java.util.logging.Logger;
 
 public class FileUtil {

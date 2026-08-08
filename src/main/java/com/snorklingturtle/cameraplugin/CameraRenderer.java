@@ -1,7 +1,7 @@
-package com.yourname.cameraplugin;
+package com.snorklingturtle.cameraplugin;
 
-import com.yourname.cameraplugin.util.RaycastUtil;
-import com.yourname.cameraplugin.util.RaycastUtil.RayHit;
+import com.snorklingturtle.cameraplugin.util.RaycastUtil;
+import com.snorklingturtle.cameraplugin.util.RaycastUtil.RayHit;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -22,7 +22,6 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 
 
 @SuppressWarnings("deprecation")

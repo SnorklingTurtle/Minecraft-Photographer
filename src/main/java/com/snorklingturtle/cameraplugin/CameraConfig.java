@@ -1,6 +1,6 @@
-package com.yourname.cameraplugin;
+package com.snorklingturtle.cameraplugin;
 
-import com.yourname.cameraplugin.util.FileUtil;
+import com.snorklingturtle.cameraplugin.util.FileUtil;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;

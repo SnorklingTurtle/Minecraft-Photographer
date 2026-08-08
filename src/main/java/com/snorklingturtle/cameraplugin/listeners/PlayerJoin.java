@@ -1,6 +1,6 @@
-package com.yourname.cameraplugin.listeners;
+package com.snorklingturtle.cameraplugin.listeners;
 
-import com.yourname.cameraplugin.CameraPlugin;
+import com.snorklingturtle.cameraplugin.CameraPlugin;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

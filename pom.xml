@@ -4,13 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.yourname</groupId>
+    <groupId>com.snorklingturtle</groupId>
     <artifactId>cameraplugin</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>CameraPlugin</name>
-    <description>A Minecraft camera plugin that renders raycasted photos onto maps.</description>
+    <description>A Minecraft camera plugin that renders photos onto maps.</description>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

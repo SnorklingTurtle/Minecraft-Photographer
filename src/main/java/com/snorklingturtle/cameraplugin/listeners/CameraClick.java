@@ -1,8 +1,8 @@
-package com.yourname.cameraplugin.listeners;
+package com.snorklingturtle.cameraplugin.listeners;
 
-import com.yourname.cameraplugin.CameraItem;
-import com.yourname.cameraplugin.CameraPlugin;
-import com.yourname.cameraplugin.CameraRenderer;
+import com.snorklingturtle.cameraplugin.CameraItem;
+import com.snorklingturtle.cameraplugin.CameraPlugin;
+import com.snorklingturtle.cameraplugin.CameraRenderer;
 import org.bukkit.entity.Player;
 import org.bukkit.Sound;
 import org.bukkit.event.EventHandler;

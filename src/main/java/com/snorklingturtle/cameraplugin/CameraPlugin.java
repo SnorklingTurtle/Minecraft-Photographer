@@ -1,8 +1,8 @@
-package com.yourname.cameraplugin;
+package com.snorklingturtle.cameraplugin;
 
-import com.yourname.cameraplugin.listeners.CameraClick;
-import com.yourname.cameraplugin.listeners.PlayerJoin;
-import com.yourname.cameraplugin.listeners.PrepareItemCraft;
+import com.snorklingturtle.cameraplugin.listeners.CameraClick;
+import com.snorklingturtle.cameraplugin.listeners.PlayerJoin;
+import com.snorklingturtle.cameraplugin.listeners.PrepareItemCraft;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;

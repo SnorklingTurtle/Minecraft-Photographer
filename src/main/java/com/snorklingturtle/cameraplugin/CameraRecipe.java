@@ -1,4 +1,4 @@
-package com.yourname.cameraplugin;
+package com.snorklingturtle.cameraplugin;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
