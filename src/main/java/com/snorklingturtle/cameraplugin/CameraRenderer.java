@@ -2,10 +2,7 @@ package com.snorklingturtle.cameraplugin;
 
 import com.snorklingturtle.cameraplugin.util.RaycastUtil;
 import com.snorklingturtle.cameraplugin.util.RaycastUtil.RayHit;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.structure.GeneratedStructure;
@@ -19,6 +16,7 @@ import org.bukkit.inventory.meta.MapMeta;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.awt.Color;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -42,21 +40,22 @@ public class CameraRenderer {
     public static void capture(Player player, CameraPlugin plugin) {
         double renderDistance = plugin.getConfig().getInt("settings.camera.renderDistance");
 
-        Location eye     = player.getEyeLocation();
+        Location eye = player.getEyeLocation();
         org.bukkit.util.Vector forward = eye.getDirection().normalize();
+
+        World world = player.getWorld();
 
         // Build an orthonormal camera basis
         org.bukkit.util.Vector worldUp = new org.bukkit.util.Vector(0, 1, 0);
-        org.bukkit.util.Vector right   = forward.clone().crossProduct(worldUp).normalize();
-        org.bukkit.util.Vector up      = right.clone().crossProduct(forward).normalize();
+        org.bukkit.util.Vector right = forward.clone().crossProduct(worldUp).normalize();
+        org.bukkit.util.Vector up = right.clone().crossProduct(forward).normalize();
 
         // --- Step 1: Raytrace all pixels and collect raw (shaded) RGB floats ---
         float[][] rawR = new float[MAP_SIZE][MAP_SIZE];
         float[][] rawG = new float[MAP_SIZE][MAP_SIZE];
         float[][] rawB = new float[MAP_SIZE][MAP_SIZE];
 
-        if (ANTI_ALIASING)
-        {
+        if (ANTI_ALIASING) {
             final double SS_STEP = 1.0 / SUPER_SAMPLING;
 
             for (int py = 0; py < MAP_SIZE; py++) {
@@ -71,13 +70,13 @@ public class CameraRenderer {
                             double subX = (sx + 0.5) * SS_STEP - 0.5;
                             double subY = (sy + 0.5) * SS_STEP - 0.5;
 
-                            double ndcX =  ((px + subX) / (MAP_SIZE - 1.0)) * 2.0 - 1.0;
+                            double ndcX = ((px + subX) / (MAP_SIZE - 1.0)) * 2.0 - 1.0;
                             double ndcY = -(((py + subY) / (MAP_SIZE - 1.0)) * 2.0 - 1.0);
 
                             double halfFov = FOV / 2.0;
                             org.bukkit.util.Vector ray = forward.clone()
                                     .add(right.clone().multiply(Math.tan(halfFov) * ndcX))
-                                    .add(up.clone()   .multiply(Math.tan(halfFov) * ndcY))
+                                    .add(up.clone().multiply(Math.tan(halfFov) * ndcY))
                                     .normalize();
 
                             RayHit hit = RaycastUtil.cast(eye, ray, renderDistance);
@@ -107,19 +106,17 @@ public class CameraRenderer {
                     rawB[px][py] = accB / samples;
                 }
             }
-        }
-        else
-        {
+        } else {
             for (int py = 0; py < MAP_SIZE; py++) {
                 for (int px = 0; px < MAP_SIZE; px++) {
                     // NDC from −1 to +1
-                    double ndcX =  (px / (MAP_SIZE - 1.0)) * 2.0 - 1.0;
+                    double ndcX = (px / (MAP_SIZE - 1.0)) * 2.0 - 1.0;
                     double ndcY = -((py / (MAP_SIZE - 1.0)) * 2.0 - 1.0); // flip Y (screen coords)
 
                     double halfFov = FOV / 2.0;
                     org.bukkit.util.Vector ray = forward.clone()
                             .add(right.clone().multiply(Math.tan(halfFov) * ndcX))
-                            .add(up.clone()   .multiply(Math.tan(halfFov) * ndcY))
+                            .add(up.clone().multiply(Math.tan(halfFov) * ndcY))
                             .normalize();
 
                     RayHit hit = RaycastUtil.cast(eye, ray, renderDistance);
@@ -128,10 +125,8 @@ public class CameraRenderer {
                     if (hit.isSky()) {
                         c = ColorPalette.getBaseColor(null);
                     } else {
-                        Color baseColor = ColorPalette.getBaseColor(hit.material);
-                        // Get the base color for this material, shaded by hit face
-                        c = shadedColor(baseColor, hit.face);
-                        // Shade by shadow
+                        c = shadedColor(ColorPalette.getBaseColor(hit.material), hit.face);
+
                         // if (hit.lightLevel > 0)
                         {
                             c = shadowColor(c, hit.lightLevel > 0 ? hit.lightLevel : 8);
@@ -146,19 +141,12 @@ public class CameraRenderer {
         }
 
 
-
-
-
-
-
         // --- Step 2: Optional dithering
         byte[] pixels;
-        if (DITHERING)
-        {
+        if (DITHERING) {
             // Floyd–Steinberg dithering → final byte[] pixel buffer
             pixels = ditherToMapPalette(rawR, rawG, rawB);
-        }
-        else {
+        } else {
             pixels = new byte[MAP_SIZE * MAP_SIZE];
             for (int py = 0; py < MAP_SIZE; py++) {
                 for (int px = 0; px < MAP_SIZE; px++) {
@@ -173,9 +161,10 @@ public class CameraRenderer {
 
         // --- Step 3: Register renderer and give map to player (main thread) ---
         Bukkit.getScheduler().runTask(plugin, () -> {
-            MapView mapView = Bukkit.createMap(player.getWorld());
+            MapView mapView = Bukkit.createMap(world);
             mapView.getRenderers().clear();
             mapView.setScale(MapView.Scale.CLOSE);
+            mapView.setLocked(true);
             mapView.setTrackingPosition(false);
             mapView.setUnlimitedTracking(false);
 
@@ -194,10 +183,12 @@ public class CameraRenderer {
                 }
             });
 
+            // Create item
             ItemStack mapItem = new ItemStack(Material.FILLED_MAP);
             MapMeta meta = (MapMeta) mapItem.getItemMeta();
             meta.setMapView(mapView);
 
+            // Prepare text for item
             String biome = player.getLocation().getBlock().getBiome().name();
             String structure = getNearestStructure(player);
 
@@ -206,11 +197,17 @@ public class CameraRenderer {
             loreList.add("by ".concat(player.getDisplayName()));
             meta.setLore(loreList);
 
+            // Hide attributes item
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
             mapItem.setItemMeta(meta);
 
+            // Add item to inventory
             player.getInventory().addItem(mapItem);
-            // player.sendMessage("§aPhoto developed! Check your inventory.");
+
+            // Save to database
+            Connection dbConnection = Storage.connect(plugin);
+            Storage.store(plugin, dbConnection, mapView.getId(), world.getSeed(), pixels, player.getUniqueId(), 1);
+            Storage.disconnect(plugin, dbConnection);
         });
     }
 
