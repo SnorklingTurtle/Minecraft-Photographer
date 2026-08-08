@@ -3,6 +3,7 @@ package com.snorklingturtle.cameraplugin.listeners;
 import com.snorklingturtle.cameraplugin.CameraItem;
 import com.snorklingturtle.cameraplugin.CameraPlugin;
 import com.snorklingturtle.cameraplugin.CameraRenderer;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.Sound;
 import org.bukkit.event.EventHandler;
@@ -33,9 +34,21 @@ public class CameraClick implements Listener {
         if (action != Action.RIGHT_CLICK_AIR) return;
 
         Player player = event.getPlayer();
+
+        boolean usePaper = player.hasPermission("camera.usepaper");
+        if (usePaper && !player.getInventory().contains(Material.PAPER)) {
+            player.sendMessage("§cYou must have paper in your inventory.");
+            return;
+        }
+
+        if (player.getInventory().firstEmpty() == -1) {
+            player.sendMessage("§cYou cannot take a photo with a full inventory.");
+            return;
+        }
+
         ItemStack held = player.getInventory().getItemInMainHand();
 
-        if (!CameraItem.isCamera(held, plugin.getCameraItemKey())) return;
+        if (!CameraItem.isCamera(held, CameraPlugin.cameraItemKey)) return;
 
         event.setCancelled(true);
 

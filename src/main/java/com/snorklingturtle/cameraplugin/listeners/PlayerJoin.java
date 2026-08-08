@@ -16,8 +16,8 @@ public class PlayerJoin implements Listener {
     /* Add recipe to new players */
     @EventHandler
     public void playerJoin(PlayerJoinEvent event) {
-        if (plugin.getConfig().getBoolean("settings.camera.recipe.enabled"))
-            event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "camera"));
+        if (plugin.getConfig().getBoolean(CameraPlugin.CONFIG_KEY_RECIPE_ENABLED))
+            event.getPlayer().discoverRecipe(CameraPlugin.recipeItemKey);
     }
 
 }

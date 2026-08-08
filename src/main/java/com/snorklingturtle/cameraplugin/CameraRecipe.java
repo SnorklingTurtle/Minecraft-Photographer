@@ -15,8 +15,7 @@ import org.bukkit.profile.PlayerTextures;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.UUID;
+import java.util.*;
 
 public class CameraRecipe {
 
@@ -29,7 +28,7 @@ public class CameraRecipe {
 
         // Get texture from URL
         try {
-            String skinUrl = config.getString("settings.camera.skinUrl");
+            String skinUrl = config.getString(CameraPlugin.CONFIG_KEY_SKIN_URL);
             if (skinUrl != null && skinUrl.trim().startsWith("http"))
             {
                 customPlayerTextures.setSkin(new URL(skinUrl.trim()));
@@ -49,18 +48,18 @@ public class CameraRecipe {
             cameraMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS);
 
             // Mark item as a camera - this way we can later check for its existence
-            cameraMeta.getPersistentDataContainer().set(plugin.getCameraItemKey(), PersistentDataType.INTEGER, 1);
+            cameraMeta.getPersistentDataContainer().set(CameraPlugin.cameraItemKey, PersistentDataType.INTEGER, 1);
         }
 
         camera.setItemMeta(cameraMeta);
 
         ShapedRecipe recipe = new ShapedRecipe(recipeKey, camera);
 
-        ArrayList<String> shapeArr = (ArrayList<String>) config.get("settings.camera.recipe.shape");
-        recipe.shape(shapeArr.toArray(new String[shapeArr.size()]));
+        ArrayList<String> shapeArr = (ArrayList<String>) config.get(CameraPlugin.CONFIG_KEY_RECIPE_SHAPE);
+        recipe.shape(shapeArr.toArray(new String[0]));
 
-        for (String ingredientKey : config.getConfigurationSection("settings.camera.recipe.ingredients").getKeys(false)) {
-            recipe.setIngredient(ingredientKey.charAt(0), Material.valueOf((String) config.get("settings.camera.recipe.ingredients." + ingredientKey)));
+        for (String ingredientKey : config.getConfigurationSection(CameraPlugin.CONFIG_KEY_RECIPE_INGREDIENTS).getKeys(false)) {
+            recipe.setIngredient(ingredientKey.charAt(0), Material.valueOf((String) config.get(CameraPlugin.CONFIG_KEY_RECIPE_INGREDIENTS.concat(".").concat(ingredientKey))));
         }
 
         Bukkit.addRecipe(recipe);

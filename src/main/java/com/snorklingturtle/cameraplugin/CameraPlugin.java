@@ -25,9 +25,21 @@ import java.util.zip.DataFormatException;
 public class CameraPlugin extends JavaPlugin {
 
     // Key used to tag the camera item in PersistentDataContainer
-    private NamespacedKey cameraItemKey;
-    private NamespacedKey recipeItemKey;
+    public static NamespacedKey cameraItemKey;
+    public static NamespacedKey recipeItemKey;
 
+    public static final int MAP_SIZE = 128;
+
+    public static final String CONFIG_KEY_RECIPE_ENABLED = "settings.camera.recipe.enabled";
+    public static final String CONFIG_KEY_RENDER_DISTANCE = "settings.camera.renderDistance";
+    public static final String CONFIG_KEY_RECIPE_SHAPE = "settings.camera.recipe.shape";
+    public static final String CONFIG_KEY_SKIN_URL = "settings.camera.skinUrl";
+    public static final String CONFIG_KEY_RECIPE_INGREDIENTS = "settings.camera.recipe.ingredients";
+    public static final String CONFIG_KEY_DITHERING = "settings.camera.dithering";
+    public static final String CONFIG_KEY_ANTIALIASING = "settings.camera.antialiasing";
+    public static final String CONFIG_KEY_FIELD_OF_VIEW = "settings.camera.fieldOfView";
+
+    // TODO: Add new photos to cache
     List<Integer> cachedMapIDs = new ArrayList<>();
 
     @Override
@@ -42,9 +54,8 @@ public class CameraPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PrepareItemCraft(this), this);
         getServer().getPluginManager().registerEvents(new CameraClick(this), this);
 
-
         FileConfiguration config = getConfig();
-        //if (config.getBoolean("settings.camera.recipe.enabled"))
+        if (config.getBoolean(CONFIG_KEY_RECIPE_ENABLED))
         {
             CameraRecipe.addRecipe(this, recipeItemKey, config);
         }
@@ -81,7 +92,7 @@ public class CameraPlugin extends JavaPlugin {
                     public void render(@NonNull MapView mapViewNew, @NonNull MapCanvas mapCanvas, @NonNull Player player) {
                         if (!cachedMapIDs.contains(mapId)) {
                             cachedMapIDs.add(mapId);
-                            
+
                             byte[] pixels;
                             try {
                                 pixels = ByteArrayCompression.decompress(mapDataSerialized);
@@ -141,11 +152,7 @@ public class CameraPlugin extends JavaPlugin {
         return true;
     }
 
-    public NamespacedKey getCameraItemKey() {
-        return cameraItemKey;
-    }
-
-    @Override
+    @Override @NonNull
     public FileConfiguration getConfig() {
         return CameraConfig.getConfig(this);
     }

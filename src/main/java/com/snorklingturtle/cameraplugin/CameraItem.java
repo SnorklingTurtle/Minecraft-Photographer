@@ -15,20 +15,6 @@ public class CameraItem {
 
     private CameraItem() {}
 
-//    public static ItemStack build(NamespacedKey key) {
-//        ItemStack item = new ItemStack(Material.SPYGLASS);
-//        ItemMeta meta = item.getItemMeta();
-//
-//        meta.setDisplayName("§6§lCamera");
-//        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS);
-//
-//        // Tag it so we can identify it later
-//        meta.getPersistentDataContainer().set(key, PersistentDataType.BYTE, (byte) 1);
-//
-//        item.setItemMeta(meta);
-//        return item;
-//    }
-
     public static boolean isCamera(ItemStack item, NamespacedKey key) {
         return item != null &&
             item.hasItemMeta() &&

@@ -23,7 +23,7 @@ public class PrepareItemCraft implements Listener {
         Recipe recipe = event.getRecipe();
         if (recipe == null) return;
 
-        if (CameraItem.isCamera(recipe.getResult(), plugin.getCameraItemKey())) {
+        if (CameraItem.isCamera(recipe.getResult(), CameraPlugin.cameraItemKey)) {
             for (HumanEntity he : event.getViewers()) {
                 if (he instanceof Player) {
                     if (!he.hasPermission("camera.craft")) {
