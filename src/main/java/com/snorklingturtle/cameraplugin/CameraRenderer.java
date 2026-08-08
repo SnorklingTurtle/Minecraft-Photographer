@@ -13,6 +13,7 @@ import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.MapMeta;
+import org.bukkit.util.Vector;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.awt.Color;
@@ -31,6 +32,14 @@ public class CameraRenderer {
 
     private CameraRenderer() {}
 
+    // Overworld sky colors
+    private static final Color[] skyColors = {
+            new Color(113, 194, 237),  // Morning
+            new Color(52, 113, 227),   // Noon
+            new Color(101, 97, 207),   // Night
+            new Color(45, 56, 74),     // Midnight
+    };
+
     public static void capture(Player player, CameraPlugin plugin) {
         double renderDistance = plugin.getConfig().getInt(CameraPlugin.CONFIG_KEY_RENDER_DISTANCE);
 
@@ -38,6 +47,7 @@ public class CameraRenderer {
         org.bukkit.util.Vector forward = eye.getDirection().normalize();
 
         World world = player.getWorld();
+        long worldTime = world.getTime();
 
         double fieldOfView = Math.toRadians(plugin.getConfig().getInt(CameraPlugin.CONFIG_KEY_FIELD_OF_VIEW));
 
@@ -80,7 +90,12 @@ public class CameraRenderer {
 
                             Color c;
                             if (hit.isSky()) {
-                                c = ColorPalette.getBaseColor(null);
+                                c = getSkyColor(world, py, worldTime);
+
+                                Color sunColor  = renderSun(ray, worldTime);
+                                Color moonColor = renderMoon(ray, worldTime);
+                                if (sunColor  != null) c = sunColor;
+                                if (moonColor != null) c = moonColor;
                             } else {
                                 c = shadedColor(ColorPalette.getBaseColor(hit.material), hit.face);
 
@@ -117,7 +132,12 @@ public class CameraRenderer {
 
                     Color c;
                     if (hit.isSky()) {
-                        c = ColorPalette.getBaseColor(null);
+                        c = getSkyColor(world, py, worldTime);
+
+                        Color sunColor  = renderSun(ray, worldTime);
+                        Color moonColor = renderMoon(ray, worldTime);
+                        if (sunColor  != null) c = sunColor;
+                        if (moonColor != null) c = moonColor;
                     } else {
                         c = shadedColor(ColorPalette.getBaseColor(hit.material), hit.face);
 
@@ -377,5 +397,95 @@ public class CameraRenderer {
 
     private static int clamp(int v) {
         return Math.max(0, Math.min(255, v));
+    }
+
+    private static Color getSkyColor(World world, int y, long time) {
+        Color dayColor = skyColors[1];
+        if (world == null) return dayColor;
+        if (world.getName().contains("end")) return new Color(36, 20, 61);
+        if (world.getName().contains("nether")) return new Color(44, 7, 7);
+
+        Color interpolated = interpolateColor((int)time);
+        return getSkyGradientColor(interpolated, y, time > 12000 ? 128 : 190);
+    }
+
+    private static Color getSkyGradientColor(Color color, int y, float maxBrightness)
+    {
+        float brightnessFactor = y / Math.min(maxBrightness, 255);
+        int red = (int)(color.getRed() + (255 - color.getRed()) * brightnessFactor);
+        int green = (int)(color.getGreen() + (255 - color.getGreen()) * brightnessFactor);
+        int blue = (int)(color.getBlue() + (255 - color.getBlue()) * brightnessFactor);
+        return new Color(
+                Math.min(red, 255),
+                Math.min(green, 255),
+                Math.min(blue, 255)
+        );
+    }
+
+    public static Color interpolateColor(int value) {
+        value = Math.min(Math.max(value, 0), 24000);
+
+        // Determine the index of the first color
+        int index = (int) ((double) value / 6000);
+
+        // Calculate the fractional part of the value within the range of each color segment
+        double fraction = (double) (value % 6000) / 6000;
+
+        // Determine the two colors to interpolate between
+        Color color1 = skyColors[index];
+        Color color2 = skyColors[(index + 1) % skyColors.length];
+
+        // Perform linear interpolation between the two colors
+        int red = (int) (color1.getRed() + fraction * (color2.getRed() - color1.getRed()));
+        int green = (int) (color1.getGreen() + fraction * (color2.getGreen() - color1.getGreen()));
+        int blue = (int) (color1.getBlue() + fraction * (color2.getBlue() - color1.getBlue()));
+
+        return new Color(red, green, blue);
+    }
+
+    private static Color renderSun(Vector ray, long worldTime) {
+        double angleOffset = Math.toRadians(5); // adjust to fix timing
+        double angle = (worldTime / 24000.0) * 2 * Math.PI + angleOffset;
+
+        Vector sunDir = new Vector(Math.cos(angle), Math.sin(angle), 0).normalize();
+
+        double dot = ray.dot(sunDir);
+        if (dot <= 0) return null; // sun is behind the camera
+
+        // Build two axes perpendicular to the sun direction
+        Vector worldUp  = new Vector(0, 1, 0);
+        Vector sunRight = sunDir.clone().crossProduct(worldUp).normalize();
+        Vector sunUp    = sunRight.clone().crossProduct(sunDir).normalize();
+
+        // Angular offset of the ray along each axis
+        double hAngle = Math.asin(Math.abs(ray.clone().subtract(sunDir.clone().multiply(dot)).dot(sunRight)));
+        double vAngle = Math.asin(Math.abs(ray.clone().subtract(sunDir.clone().multiply(dot)).dot(sunUp)));
+
+        double halfSize = Math.toRadians(6.0);
+        if (hAngle > halfSize || vAngle > halfSize) return null;
+
+        return new Color(255, 249, 230);
+    }
+
+    private static Color renderMoon(Vector ray, long worldTime) {
+        double angleOffset = Math.toRadians(5); // keep in sync with sun
+        double angle = (worldTime / 24000.0) * 2 * Math.PI + angleOffset;
+
+        Vector moonDir = new Vector(-Math.cos(angle), -Math.sin(angle), 0).normalize();
+
+        double dot = ray.dot(moonDir);
+        if (dot <= 0) return null;
+
+        Vector worldUp   = new Vector(0, 1, 0);
+        Vector moonRight = moonDir.clone().crossProduct(worldUp).normalize();
+        Vector moonUp    = moonRight.clone().crossProduct(moonDir).normalize();
+
+        double hAngle = Math.asin(Math.abs(ray.clone().subtract(moonDir.clone().multiply(dot)).dot(moonRight)));
+        double vAngle = Math.asin(Math.abs(ray.clone().subtract(moonDir.clone().multiply(dot)).dot(moonUp)));
+
+        double halfSize = Math.toRadians(3.5);
+        if (hAngle > halfSize || vAngle > halfSize) return null;
+
+        return new Color(220, 220, 255);
     }
 }

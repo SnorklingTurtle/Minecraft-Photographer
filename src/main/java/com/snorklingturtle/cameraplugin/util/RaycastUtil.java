@@ -30,7 +30,7 @@ public class RaycastUtil {
                 // Hack to avoid black pixels at block edges
                 if (lightLevel == 0)
                 {
-                    lightLevel = block.getRelative(face).getLightFromSky();
+                    lightLevel = block.getRelative(face).getLightFromBlocks();
                 }
 
                 return new RayHit(block.getType(), face, d, lightLevel);
