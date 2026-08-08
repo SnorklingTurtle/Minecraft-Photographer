@@ -38,6 +38,7 @@ public class CameraPlugin extends JavaPlugin {
     public static final String CONFIG_KEY_DITHERING = "settings.camera.dithering";
     public static final String CONFIG_KEY_ANTIALIASING = "settings.camera.antialiasing";
     public static final String CONFIG_KEY_FIELD_OF_VIEW = "settings.camera.fieldOfView";
+    public static final String CONFIG_KEY_CAPTURE_COOLDOWN = "settings.camera.cooldown";
 
     // TODO: Add new photos to cache
     List<Integer> cachedMapIDs = new ArrayList<>();

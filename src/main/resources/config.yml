@@ -11,19 +11,15 @@ settings:
         - ITI
         - IRI
       enabled: true
+    # Per player cooldown between each capture. 20 = 1 second
+    cooldown: 20
     dithering: true
     antialiasing: true
     fieldOfView: 70
+    # Lower number is more performant
+    renderDistance: 128
     # Skin must be located at one of Mojangs/Minecrafts whitelisted domains.
     # New skin will be applied to newly crafted cameras.
     skinUrl: "https://textures.minecraft.net/texture/ded4781df856279522d844252eca79a6cc6f24a9baa89d293d829053fd9c9c"
-    # Lower number is more performant
-    renderDistance: 128
-  messages:
-    notready: '&cCamera is still loading, please wait.'
-    invfull: '&cYou cannot take a picture with a full inventory.'
-    delay: '&cPlease wait before taking another picture.'
-    nopaper: '&cYou must have paper in order to take a picture.'
-    cantfetch: '&cUnable to fetch picture.'
-    enabled: true
+
   debug: false

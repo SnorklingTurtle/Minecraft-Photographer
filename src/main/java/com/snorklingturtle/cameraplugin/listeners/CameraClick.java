@@ -28,12 +28,17 @@ public class CameraClick implements Listener {
 
     @EventHandler
     public void cameraClicked(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+
+        ItemStack held = player.getInventory().getItemInMainHand();
+        if (!CameraItem.isCamera(held, CameraPlugin.cameraItemKey)) return;
+
+        event.setCancelled(true);
+
         Action action = event.getAction();
 
         // Only care about right clicks (air or block)
         if (action != Action.RIGHT_CLICK_AIR) return;
-
-        Player player = event.getPlayer();
 
         boolean usePaper = player.hasPermission("camera.usepaper");
         if (usePaper && !player.getInventory().contains(Material.PAPER)) {
@@ -46,21 +51,15 @@ public class CameraClick implements Listener {
             return;
         }
 
-        ItemStack held = player.getInventory().getItemInMainHand();
-
-        if (!CameraItem.isCamera(held, CameraPlugin.cameraItemKey)) return;
-
-        event.setCancelled(true);
-
         // Simple per-player cooldown to avoid duplicate events
         UUID id = player.getUniqueId();
         if (cooldown.contains(id)) return;
         cooldown.add(id);
 
-        // Remove from cooldown after 5 ticks (0.25s)
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> cooldown.remove(id), 5L);
+        int captureCooldown = plugin.getConfig().getInt(CameraPlugin.CONFIG_KEY_CAPTURE_COOLDOWN);
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> cooldown.remove(id), captureCooldown);
 
-        if (!player.hasPermission("camera.useitem")) {
+        if (!player.hasPermission("camera.use")) {
             player.sendMessage("§cYou don't have permission to use the camera.");
             return;
         }
