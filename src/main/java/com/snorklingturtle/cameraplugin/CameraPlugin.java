@@ -3,6 +3,7 @@ package com.snorklingturtle.cameraplugin;
 import com.snorklingturtle.cameraplugin.listeners.CameraClick;
 import com.snorklingturtle.cameraplugin.listeners.PlayerJoin;
 import com.snorklingturtle.cameraplugin.listeners.PrepareItemCraft;
+import com.snorklingturtle.cameraplugin.util.ByteArrayCompression;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
@@ -19,6 +20,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.DataFormatException;
 
 public class CameraPlugin extends JavaPlugin {
 
@@ -79,7 +81,13 @@ public class CameraPlugin extends JavaPlugin {
                     public void render(@NonNull MapView mapViewNew, @NonNull MapCanvas mapCanvas, @NonNull Player player) {
                         if (!cachedMapIDs.contains(mapId)) {
                             cachedMapIDs.add(mapId);
-                            byte[] pixels = Storage.deserializeByteArray2d(mapDataSerialized);
+                            
+                            byte[] pixels;
+                            try {
+                                pixels = ByteArrayCompression.decompress(mapDataSerialized);
+                            } catch (DataFormatException ex) {
+                                throw new RuntimeException(ex);
+                            }
 
                             mapView.setLocked(true);
                             mapView.setTrackingPosition(false);

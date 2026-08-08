@@ -97,8 +97,7 @@ public class Storage {
             PreparedStatement statement = conn.prepareStatement(query);
             statement.setInt(1, id);
             statement.setLong(2, seed);
-            //statement.setBytes(3, serializeByteArray2d(data));
-            statement.setBytes(3, data);
+            statement.setBytes(3, ByteArrayCompression.compress(data));
             statement.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
             statement.setString(5, tag);
             statement.setString(6, tagger != null ? tagger.toString() : null);
@@ -240,42 +239,4 @@ public class Storage {
 
         return rs;
     }
-
-    public static byte[] serializeByteArray2d(byte[][] array, boolean useCompression) {
-        int totalLength = 0;
-        for (byte[] row : array) {
-            totalLength += row.length;
-        }
-        byte[] serializedArray = new byte[totalLength];
-        int index = 0;
-        for (byte[] row : array) {
-            System.arraycopy(row, 0, serializedArray, index, row.length);
-            index += row.length;
-        }
-        return useCompression ? ByteArrayCompression.compress(serializedArray) : serializedArray;
-    }
-
-    public static byte[] serializeByteArray2d(byte[][] array) {
-        return serializeByteArray2d(array, true);
-    }
-
-    public static byte[] deserializeByteArray2d(byte[] serializedCompressedArray) {
-        if (serializedCompressedArray == null) //  || serializedCompressedArray.length != rows * cols
-            return null;
-
-        byte[] serializedArray = null;
-        try {
-            serializedArray = serializedCompressedArray; // ByteArrayCompression.decompress(serializedCompressedArray);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-//        if (serializedArray == null)
-//            return null;
-
-        return serializedArray;
-    }
-
 }
