@@ -1,13 +1,14 @@
 package com.snorklingturtle.cameraplugin;
 
+import com.snorklingturtle.cameraplugin.commands.CameraCommand;
+import com.snorklingturtle.cameraplugin.commands.CameraCommandTabCompleter;
 import com.snorklingturtle.cameraplugin.listeners.CameraClick;
 import com.snorklingturtle.cameraplugin.listeners.PlayerJoin;
 import com.snorklingturtle.cameraplugin.listeners.PrepareItemCraft;
 import com.snorklingturtle.cameraplugin.util.ByteArrayCompression;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.map.MapCanvas;
@@ -30,13 +31,20 @@ public class CameraPlugin extends JavaPlugin {
 
     public static final int MAP_SIZE = 128;
 
+    public static boolean hasAntiAliasing = true;
+    public static boolean hasShading = true;
+    public static boolean hasShadows = true;
+    public static boolean hasDithering = true;
+
     public static final String CONFIG_KEY_RECIPE_ENABLED = "settings.camera.recipe.enabled";
     public static final String CONFIG_KEY_RENDER_DISTANCE = "settings.camera.renderDistance";
     public static final String CONFIG_KEY_RECIPE_SHAPE = "settings.camera.recipe.shape";
     public static final String CONFIG_KEY_SKIN_URL = "settings.camera.skinUrl";
     public static final String CONFIG_KEY_RECIPE_INGREDIENTS = "settings.camera.recipe.ingredients";
-    public static final String CONFIG_KEY_DITHERING = "settings.camera.dithering";
-    public static final String CONFIG_KEY_ANTIALIASING = "settings.camera.antialiasing";
+    private static final String CONFIG_KEY_DITHERING = "settings.camera.dithering";
+    private static final String CONFIG_KEY_ANTIALIASING = "settings.camera.antialiasing";
+    private static final String CONFIG_KEY_SHADOWS = "settings.camera.shadows";
+    private static final String CONFIG_KEY_SHADING = "settings.camera.shading";
     public static final String CONFIG_KEY_FIELD_OF_VIEW = "settings.camera.fieldOfView";
     public static final String CONFIG_KEY_CAPTURE_COOLDOWN = "settings.camera.cooldown";
 
@@ -55,11 +63,25 @@ public class CameraPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PrepareItemCraft(this), this);
         getServer().getPluginManager().registerEvents(new CameraClick(this), this);
 
+        // Commands
+        PluginCommand cameraCommand = getCommand("camera");
+        if (cameraCommand != null)
+        {
+            cameraCommand.setExecutor(new CameraCommand());
+            cameraCommand.setTabCompleter(new CameraCommandTabCompleter());
+        }
+
+        // Config
         FileConfiguration config = getConfig();
         if (config.getBoolean(CONFIG_KEY_RECIPE_ENABLED))
         {
             CameraRecipe.addRecipe(this, recipeItemKey, config);
         }
+
+        hasAntiAliasing = config.getBoolean(CONFIG_KEY_ANTIALIASING);
+        hasShading = config.getBoolean(CONFIG_KEY_SHADING);
+        hasShadows = config.getBoolean(CONFIG_KEY_SHADOWS);
+        hasDithering = config.getBoolean(CONFIG_KEY_DITHERING);
 
         // Prepare database
         Connection dbConnection = Storage.connect(this);
@@ -70,6 +92,11 @@ public class CameraPlugin extends JavaPlugin {
         initializePhotos(dbConnection);
 
         Storage.disconnect(this, dbConnection);
+    }
+
+    @Override
+    public void onDisable() {
+        getLogger().info("Camera disabled.");
     }
 
     private void initializePhotos(Connection dbConnection) {
@@ -122,39 +149,6 @@ public class CameraPlugin extends JavaPlugin {
         {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public void onDisable() {
-        getLogger().info("Camera disabled.");
-    }
-
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!command.getName().equalsIgnoreCase("camera")) return false;
-
-        if (!(sender instanceof Player player)) {
-            return true;
-        }
-
-        if (!player.hasPermission("camera.command")) {
-            return false;
-        }
-
-        if (args.length == 0 || args[0].equalsIgnoreCase("help")) {
-            player.sendMessage("§6=== Camera ===");
-            player.sendMessage("§7Right-click while holding a camera in your hand to take a photo.");
-
-            player.sendMessage("§e/camera aa §7- Toggle anti-aliasing.");
-            player.sendMessage("§e/camera dither §7- Toggle dithering.");
-            player.sendMessage("§e/camera shade §7- Toggles shading of each side of a block.");
-            player.sendMessage("§e/camera shadow §7- Toggles shadows depending on light level. ");
-            player.sendMessage("§e/camera frame §7- Toggle framing of photo.");
-            return true;
-        }
-
-        player.sendMessage("§cUnknown subcommand. Use §e/camera help§c.");
-        return true;
     }
 
     @Override @NonNull

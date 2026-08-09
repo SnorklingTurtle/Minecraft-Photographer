@@ -15,7 +15,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.util.Vector;
 import org.checkerframework.checker.nullness.qual.NonNull;
-
 import java.awt.Color;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -40,137 +39,49 @@ public class CameraRenderer {
             new Color(45, 56, 74),     // Midnight
     };
 
+    private static class TraceResult {
+        public float[][] RawR;
+        public float[][] RawG;
+        public float[][] RawB;
+    }
+
+    public interface PostEffectCallback {
+        Color getColor(RaycastUtil.RayHit hit, org.bukkit.util.Vector ray, String worldName, long worldTime, int positionY);
+    }
+
     public static void capture(Player player, CameraPlugin plugin) {
         double renderDistance = plugin.getConfig().getInt(CameraPlugin.CONFIG_KEY_RENDER_DISTANCE);
 
-        Location eye = player.getEyeLocation();
-        org.bukkit.util.Vector forward = eye.getDirection().normalize();
-
         World world = player.getWorld();
-        long worldTime = world.getTime();
-
         double fieldOfView = Math.toRadians(plugin.getConfig().getInt(CameraPlugin.CONFIG_KEY_FIELD_OF_VIEW));
 
-        // Build an orthonormal camera basis
-        org.bukkit.util.Vector worldUp = new org.bukkit.util.Vector(0, 1, 0);
-        org.bukkit.util.Vector right = forward.clone().crossProduct(worldUp).normalize();
-        org.bukkit.util.Vector up = right.clone().crossProduct(forward).normalize();
+        TraceResult traceResult = trace(
+                world,
+                player,
+                renderDistance,
+                fieldOfView,
+                CameraRenderer::PostProcessing
+        );
 
-        // --- Step 1: Raytrace all pixels and collect raw (shaded) RGB floats ---
-        float[][] rawR = new float[CameraPlugin.MAP_SIZE][CameraPlugin.MAP_SIZE];
-        float[][] rawG = new float[CameraPlugin.MAP_SIZE][CameraPlugin.MAP_SIZE];
-        float[][] rawB = new float[CameraPlugin.MAP_SIZE][CameraPlugin.MAP_SIZE];
-
-        // TODO: Clean up this if...else
-        if (plugin.getConfig().getBoolean(CameraPlugin.CONFIG_KEY_ANTIALIASING)) {
-            final double SS_STEP = 1.0 / SUPER_SAMPLING;
-
-            for (int py = 0; py < CameraPlugin.MAP_SIZE; py++) {
-                for (int px = 0; px < CameraPlugin.MAP_SIZE; px++) {
-
-                    float accR = 0, accG = 0, accB = 0;
-
-                    for (int sy = 0; sy < SUPER_SAMPLING; sy++) {
-                        for (int sx = 0; sx < SUPER_SAMPLING; sx++) {
-
-                            // Offset each sub-ray within the pixel (0.5 centres the grid)
-                            double subX = (sx + 0.5) * SS_STEP - 0.5;
-                            double subY = (sy + 0.5) * SS_STEP - 0.5;
-
-                            double ndcX = ((px + subX) / (CameraPlugin.MAP_SIZE - 1.0)) * 2.0 - 1.0;
-                            double ndcY = -(((py + subY) / (CameraPlugin.MAP_SIZE - 1.0)) * 2.0 - 1.0);
-
-                            double halfFov = fieldOfView / 2.0;
-                            org.bukkit.util.Vector ray = forward.clone()
-                                    .add(right.clone().multiply(Math.tan(halfFov) * ndcX))
-                                    .add(up.clone().multiply(Math.tan(halfFov) * ndcY))
-                                    .normalize();
-
-                            RayHit hit = RaycastUtil.cast(eye, ray, renderDistance);
-
-                            Color c;
-                            if (hit.isSky()) {
-                                c = getSkyColor(world, py, worldTime);
-
-                                Color sunColor  = renderSun(ray, worldTime);
-                                Color moonColor = renderMoon(ray, worldTime);
-                                if (sunColor  != null) c = sunColor;
-                                if (moonColor != null) c = moonColor;
-                            } else {
-                                c = shadedColor(ColorPalette.getBaseColor(hit.material), hit.face);
-
-                                c = shadowColor(c, hit.lightLevel);
-                            }
-
-                            accR += c.getRed();
-                            accG += c.getGreen();
-                            accB += c.getBlue();
-                        }
-                    }
-
-                    // Average across all sub-rays
-                    int samples = SUPER_SAMPLING * SUPER_SAMPLING;
-                    rawR[px][py] = accR / samples;
-                    rawG[px][py] = accG / samples;
-                    rawB[px][py] = accB / samples;
-                }
-            }
-        } else {
-            for (int py = 0; py < CameraPlugin.MAP_SIZE; py++) {
-                for (int px = 0; px < CameraPlugin.MAP_SIZE; px++) {
-                    // NDC from −1 to +1
-                    double ndcX = (px / (CameraPlugin.MAP_SIZE - 1.0)) * 2.0 - 1.0;
-                    double ndcY = -((py / (CameraPlugin.MAP_SIZE - 1.0)) * 2.0 - 1.0); // flip Y (screen coords)
-
-                    double halfFov = fieldOfView / 2.0;
-                    org.bukkit.util.Vector ray = forward.clone()
-                            .add(right.clone().multiply(Math.tan(halfFov) * ndcX))
-                            .add(up.clone().multiply(Math.tan(halfFov) * ndcY))
-                            .normalize();
-
-                    RayHit hit = RaycastUtil.cast(eye, ray, renderDistance);
-
-                    Color c;
-                    if (hit.isSky()) {
-                        c = getSkyColor(world, py, worldTime);
-
-                        Color sunColor  = renderSun(ray, worldTime);
-                        Color moonColor = renderMoon(ray, worldTime);
-                        if (sunColor  != null) c = sunColor;
-                        if (moonColor != null) c = moonColor;
-                    } else {
-                        c = shadedColor(ColorPalette.getBaseColor(hit.material), hit.face);
-
-                        c = shadowColor(c, hit.lightLevel);
-                    }
-
-                    rawR[px][py] = c.getRed();
-                    rawG[px][py] = c.getGreen();
-                    rawB[px][py] = c.getBlue();
-                }
-            }
-        }
-
-
-        // --- Step 2: Optional dithering
+        // Optional dithering
         byte[] pixels;
-        if (plugin.getConfig().getBoolean(CameraPlugin.CONFIG_KEY_DITHERING)) {
+        if (CameraPlugin.hasDithering) {
             // Floyd–Steinberg dithering → final byte[] pixel buffer
-            pixels = ditherToMapPalette(rawR, rawG, rawB);
+            pixels = ditherToMapPalette(traceResult.RawR, traceResult.RawG, traceResult.RawB);
         } else {
             pixels = new byte[CameraPlugin.MAP_SIZE * CameraPlugin.MAP_SIZE];
             for (int py = 0; py < CameraPlugin.MAP_SIZE; py++) {
                 for (int px = 0; px < CameraPlugin.MAP_SIZE; px++) {
                     pixels[py * CameraPlugin.MAP_SIZE + px] = MapPalette.matchColor(
-                            clamp(Math.round(rawR[px][py])),
-                            clamp(Math.round(rawG[px][py])),
-                            clamp(Math.round(rawB[px][py]))
+                            clamp(Math.round(traceResult.RawR[px][py])),
+                            clamp(Math.round(traceResult.RawG[px][py])),
+                            clamp(Math.round(traceResult.RawB[px][py]))
                     );
                 }
             }
         }
 
-        // --- Step 3: Register renderer and give map to player (main thread) ---
+        // Register renderer and give map to player (main thread) ---
         Bukkit.getScheduler().runTask(plugin, () -> {
             MapView mapView = Bukkit.createMap(world);
             mapView.getRenderers().clear();
@@ -220,6 +131,124 @@ public class CameraRenderer {
             Storage.store(plugin, dbConnection, mapView.getId(), world.getSeed(), pixels, player.getUniqueId(), 1);
             Storage.disconnect(plugin, dbConnection);
         });
+    }
+
+    private static Color PostProcessing(RaycastUtil.RayHit hit, org.bukkit.util.Vector ray, String worldName, long worldTime, int positionY) {
+        Color c;
+        if (hit.isSky()) {
+            c = getSkyColor(worldName, positionY, worldTime);
+
+            Color sunColor  = renderSun(ray, worldTime);
+            Color moonColor = renderMoon(ray, worldTime);
+            if (sunColor  != null) c = sunColor;
+            if (moonColor != null) c = moonColor;
+        } else {
+            // Fallback color if both shading and shadows are disabled
+            c = ColorPalette.getBaseColor(hit.material);
+
+            if (CameraPlugin.hasShading)
+            {
+                c = shadedColor(c, hit.face);
+            }
+            if (CameraPlugin.hasShadows)
+            {
+                c = shadowColor(c, hit.lightLevel);
+            }
+        }
+        return c;
+    }
+
+    private static TraceResult trace(World world, Player player, double distance, double fieldOfView, PostEffectCallback postEffectCallback) {
+
+        Location eye = player.getEyeLocation();
+        org.bukkit.util.Vector forward = eye.getDirection().normalize();
+
+        String worldName = world.getName();
+        long worldTime = world.getTime();
+
+        // Build an orthonormal camera basis
+        org.bukkit.util.Vector worldUp = new org.bukkit.util.Vector(0, 1, 0);
+        org.bukkit.util.Vector right = forward.clone().crossProduct(worldUp).normalize();
+        org.bukkit.util.Vector up = right.clone().crossProduct(forward).normalize();
+
+        // Raytrace all pixels and collect raw (shaded) RGB floats ---
+        float[][] rawR = new float[CameraPlugin.MAP_SIZE][CameraPlugin.MAP_SIZE];
+        float[][] rawG = new float[CameraPlugin.MAP_SIZE][CameraPlugin.MAP_SIZE];
+        float[][] rawB = new float[CameraPlugin.MAP_SIZE][CameraPlugin.MAP_SIZE];
+
+        if (CameraPlugin.hasAntiAliasing) {
+            final double SS_STEP = 1.0 / SUPER_SAMPLING;
+
+            for (int py = 0; py < CameraPlugin.MAP_SIZE; py++) {
+                for (int px = 0; px < CameraPlugin.MAP_SIZE; px++) {
+
+                    float accR = 0, accG = 0, accB = 0;
+
+                    for (int sy = 0; sy < SUPER_SAMPLING; sy++) {
+                        for (int sx = 0; sx < SUPER_SAMPLING; sx++) {
+
+                            // Offset each sub-ray within the pixel (0.5 centres the grid)
+                            double subX = (sx + 0.5) * SS_STEP - 0.5;
+                            double subY = (sy + 0.5) * SS_STEP - 0.5;
+
+                            double ndcX = ((px + subX) / (CameraPlugin.MAP_SIZE - 1.0)) * 2.0 - 1.0;
+                            double ndcY = -(((py + subY) / (CameraPlugin.MAP_SIZE - 1.0)) * 2.0 - 1.0);
+
+                            double halfFov = fieldOfView / 2.0;
+                            org.bukkit.util.Vector ray = forward.clone()
+                                    .add(right.clone().multiply(Math.tan(halfFov) * ndcX))
+                                    .add(up.clone().multiply(Math.tan(halfFov) * ndcY))
+                                    .normalize();
+
+                            RayHit hit = RaycastUtil.cast(eye, ray, distance);
+
+                            // Do sun, moon, shading and shadows
+                            Color c = postEffectCallback.getColor(hit, ray, worldName, worldTime, py);
+
+                            accR += c.getRed();
+                            accG += c.getGreen();
+                            accB += c.getBlue();
+                        }
+                    }
+
+                    // Average across all sub-rays
+                    int samples = SUPER_SAMPLING * SUPER_SAMPLING;
+                    rawR[px][py] = accR / samples;
+                    rawG[px][py] = accG / samples;
+                    rawB[px][py] = accB / samples;
+                }
+            }
+        } else {
+            for (int py = 0; py < CameraPlugin.MAP_SIZE; py++) {
+                for (int px = 0; px < CameraPlugin.MAP_SIZE; px++) {
+                    // NDC from −1 to +1
+                    double ndcX = (px / (CameraPlugin.MAP_SIZE - 1.0)) * 2.0 - 1.0;
+                    double ndcY = -((py / (CameraPlugin.MAP_SIZE - 1.0)) * 2.0 - 1.0); // flip Y (screen coords)
+
+                    double halfFov = fieldOfView / 2.0;
+                    org.bukkit.util.Vector ray = forward.clone()
+                            .add(right.clone().multiply(Math.tan(halfFov) * ndcX))
+                            .add(up.clone().multiply(Math.tan(halfFov) * ndcY))
+                            .normalize();
+
+                    RayHit hit = RaycastUtil.cast(eye, ray, distance);
+
+                    // Do sun, moon, shading and shadows
+                    Color c = postEffectCallback.getColor(hit, ray, worldName, worldTime, py);
+
+                    rawR[px][py] = c.getRed();
+                    rawG[px][py] = c.getGreen();
+                    rawB[px][py] = c.getBlue();
+                }
+            }
+        }
+
+        TraceResult traceResult = new TraceResult();
+        traceResult.RawR = rawR;
+        traceResult.RawG = rawG;
+        traceResult.RawB = rawB;
+
+        return traceResult;
     }
 
     private static String getNearestStructure(Player player) {
@@ -399,11 +428,11 @@ public class CameraRenderer {
         return Math.max(0, Math.min(255, v));
     }
 
-    private static Color getSkyColor(World world, int y, long time) {
+    private static Color getSkyColor(String worldName, int y, long time) {
         Color dayColor = skyColors[1];
-        if (world == null) return dayColor;
-        if (world.getName().contains("end")) return new Color(36, 20, 61);
-        if (world.getName().contains("nether")) return new Color(44, 7, 7);
+        if (worldName == null) return dayColor;
+        if (worldName.contains("end")) return new Color(36, 20, 61);
+        if (worldName.contains("nether")) return new Color(44, 7, 7);
 
         Color interpolated = interpolateColor((int)time);
         return getSkyGradientColor(interpolated, y, time > 12000 ? 128 : 190);
