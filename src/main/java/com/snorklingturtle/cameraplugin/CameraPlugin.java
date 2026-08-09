@@ -137,6 +137,10 @@ public class CameraPlugin extends JavaPlugin {
             return true;
         }
 
+        if (!player.hasPermission("camera.command")) {
+            return false;
+        }
+
         if (args.length == 0 || args[0].equalsIgnoreCase("help")) {
             player.sendMessage("§6=== Camera ===");
             player.sendMessage("§7Right-click while holding a camera in your hand to take a photo.");

@@ -3,6 +3,7 @@ package com.snorklingturtle.cameraplugin.listeners;
 import com.snorklingturtle.cameraplugin.CameraItem;
 import com.snorklingturtle.cameraplugin.CameraPlugin;
 import com.snorklingturtle.cameraplugin.CameraRenderer;
+import com.snorklingturtle.cameraplugin.util.InventoryUtil;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.Sound;
@@ -62,6 +63,11 @@ public class CameraClick implements Listener {
         if (!player.hasPermission("camera.use")) {
             player.sendMessage("§cYou don't have permission to use the camera.");
             return;
+        }
+
+        if (usePaper) {
+            // remove 1 paper from the player's inventory
+            InventoryUtil.removePaperFromInventory(player, 1);
         }
 
         player.playSound(player.getLocation(), Sound.BLOCK_PISTON_EXTEND, 0.5F, 2.0F);

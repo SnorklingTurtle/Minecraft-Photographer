@@ -10,10 +10,18 @@ commands:
   camera:
     description: Camera plugin commands.
     usage: /camera <help|aa|shade|shadow|dither|frame>
-    permission: camera.use
+    permission: camera.command
 
 permissions:
+  camera.craft:
+    description: Allows crafting the camera.
+    default: true
   camera.use:
-    description: Allows using the camera item and command.
+    description: Allows using the camera item.
+    default: true
+  camera.command:
+    description: Allows camera commands /camera
     default: op
-
+  camera.usepaper:
+    description: Require paper when taking photos
+    default: true
