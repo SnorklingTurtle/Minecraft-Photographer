@@ -25,6 +25,7 @@ public class CameraConfig {
             }
             catch (Exception e)
             {
+                plugin.getLogger().warning("Failed to create config.yml");
                 e.printStackTrace();
             }
         }

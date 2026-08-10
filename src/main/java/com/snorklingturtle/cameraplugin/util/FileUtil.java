@@ -10,14 +10,21 @@ import java.util.logging.Logger;
 
 public class FileUtil {
 
-    public static boolean copyResource(CameraPlugin plugin, String resourceFilePath, String destinationFilePath) throws IOException {
+    public static boolean copyResource(CameraPlugin plugin, String resourceFilePath, String destinationFilePath) {
         File folder = plugin.getDataFolder();
         Logger log = plugin.getLogger();
 
-        try (InputStream sourceStream = plugin.getClass().getClassLoader().getResourceAsStream(resourceFilePath)) {
+        try (InputStream sourceStream = CameraPlugin.class.getResourceAsStream(resourceFilePath)) {
             if (sourceStream == null)
+            {
+                log.severe("Couldn't copy " + resourceFilePath + " from resource directory");
                 return false;
+            }
+
             Files.copy(sourceStream, Paths.get(folder + destinationFilePath), StandardCopyOption.REPLACE_EXISTING);
+
+            log.info("Created new " + resourceFilePath);
+
         } catch (IOException e) {
             log.severe("An error occurred copying the resource: " + resourceFilePath);
             e.printStackTrace();

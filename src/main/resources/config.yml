@@ -13,6 +13,8 @@ settings:
       enabled: true
     # Per player cooldown between each capture. 20 = 1 second
     cooldown: 20
+    shading: true
+    shadows: true
     dithering: true
     antialiasing: true
     fieldOfView: 70

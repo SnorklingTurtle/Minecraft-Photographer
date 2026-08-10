@@ -64,9 +64,9 @@ public class Storage {
     }
 
     public static void createCleanUpTrigger(CameraPlugin plugin, Connection conn) {
-        String query = String.format("CREATE TRIGGER IF NOT EXISTS picture_cleanup\n" +
+        String query = String.format("CREATE TRIGGER IF NOT EXISTS photo_cleanup\n" +
                 "   AFTER UPDATE\n" +
-                "   ON pictures\n" +
+                "   ON photos\n" +
                 "   WHEN NEW.counter <= 0\n" +
                 " BEGIN\n" +
                 "   DELETE FROM %s WHERE id=NEW.id;\n" +
