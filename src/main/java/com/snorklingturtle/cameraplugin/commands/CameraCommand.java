@@ -27,8 +27,7 @@ public class CameraCommand implements CommandExecutor {
             player.sendMessage("§e/camera aa §7- Toggle anti-aliasing.");
             player.sendMessage("§e/camera dither §7- Toggle dithering.");
             player.sendMessage("§e/camera shade §7- Toggles shading of each side of a block.");
-            player.sendMessage("§e/camera shadow §7- Toggles shadows depending on light level. ");
-            player.sendMessage("§e/camera frame §7- Toggle framing of photo.");
+            player.sendMessage("§e/camera shadow §7- Toggles shadows depending on light level.");
             return true;
         }
 

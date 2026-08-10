@@ -9,7 +9,7 @@ softdepend: [Multiverse-Core]
 commands:
   camera:
     description: Camera plugin commands.
-    usage: /camera <help|aa|shade|shadow|dither|frame>
+    usage: /camera <help|aa|shade|shadow|dither>
     permission: camera.command
 
 permissions:

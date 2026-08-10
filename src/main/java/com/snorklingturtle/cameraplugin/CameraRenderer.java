@@ -1,5 +1,6 @@
 package com.snorklingturtle.cameraplugin;
 
+import com.snorklingturtle.cameraplugin.util.PhotoUtil;
 import com.snorklingturtle.cameraplugin.util.RaycastUtil;
 import com.snorklingturtle.cameraplugin.util.RaycastUtil.RayHit;
 import org.bukkit.*;
@@ -114,7 +115,7 @@ public class CameraRenderer {
             String biome = player.getLocation().getBlock().getBiome().name();
             String structure = getNearestStructure(player);
 
-            meta.setItemName("§6Photo at ".concat(formatName(structure != null ? structure : biome) ));
+            meta.setItemName("§6Photo at ".concat(formatName(structure != null ? structure : biome)));
             ArrayList<String> loreList = new ArrayList<>();
             loreList.add("by ".concat(player.getDisplayName()));
             meta.setLore(loreList);
@@ -125,6 +126,9 @@ public class CameraRenderer {
 
             // Add item to inventory
             player.getInventory().addItem(mapItem);
+
+            // Cache ID
+            CameraPlugin.cachedMapIDs.add(mapView.getId());
 
             // Save to database
             Connection dbConnection = Storage.connect(plugin);

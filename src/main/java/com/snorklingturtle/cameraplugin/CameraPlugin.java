@@ -2,9 +2,7 @@ package com.snorklingturtle.cameraplugin;
 
 import com.snorklingturtle.cameraplugin.commands.CameraCommand;
 import com.snorklingturtle.cameraplugin.commands.CameraCommandTabCompleter;
-import com.snorklingturtle.cameraplugin.listeners.CameraClick;
-import com.snorklingturtle.cameraplugin.listeners.PlayerJoin;
-import com.snorklingturtle.cameraplugin.listeners.PrepareItemCraft;
+import com.snorklingturtle.cameraplugin.listeners.*;
 import com.snorklingturtle.cameraplugin.util.ByteArrayCompression;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -48,8 +46,7 @@ public class CameraPlugin extends JavaPlugin {
     public static final String CONFIG_KEY_FIELD_OF_VIEW = "settings.camera.fieldOfView";
     public static final String CONFIG_KEY_CAPTURE_COOLDOWN = "settings.camera.cooldown";
 
-    // TODO: Add new photos to cache
-    List<Integer> cachedMapIDs = new ArrayList<>();
+    public static List<Integer> cachedMapIDs = new ArrayList<>();
 
     @Override
     public void onEnable() {
@@ -62,6 +59,8 @@ public class CameraPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerJoin(this), this);
         getServer().getPluginManager().registerEvents(new PrepareItemCraft(this), this);
         getServer().getPluginManager().registerEvents(new CameraClick(this), this);
+        getServer().getPluginManager().registerEvents(new PhotoCopy(this), this);
+        getServer().getPluginManager().registerEvents(new PhotoDestroy(this), this);
 
         // Commands
         PluginCommand cameraCommand = getCommand("camera");
@@ -118,8 +117,8 @@ public class CameraPlugin extends JavaPlugin {
                 mapView.addRenderer(new MapRenderer() {
                     @Override
                     public void render(@NonNull MapView mapViewNew, @NonNull MapCanvas mapCanvas, @NonNull Player player) {
-                        if (!cachedMapIDs.contains(mapId)) {
-                            cachedMapIDs.add(mapId);
+                        if (!cachedMapIDs.contains(mapViewNew.getId())) {
+                            cachedMapIDs.add(mapViewNew.getId());
 
                             byte[] pixels;
                             try {
@@ -131,8 +130,6 @@ public class CameraPlugin extends JavaPlugin {
                             mapView.setLocked(true);
                             mapView.setTrackingPosition(false);
                             mapView.setUnlimitedTracking(false);
-
-                            int MAP_SIZE = 128;
 
                             for (int py = 0; py < MAP_SIZE; py++) {
                                 for (int px = 0; px < MAP_SIZE; px++) {
