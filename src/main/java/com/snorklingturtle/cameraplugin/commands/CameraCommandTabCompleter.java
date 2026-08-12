@@ -11,6 +11,10 @@ public class CameraCommandTabCompleter implements TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        return Arrays.asList("help", "aa", "shade", "shadow", "dither");
+        if (args[0].equalsIgnoreCase("fov"))
+        {
+            return Arrays.asList("30", "40", "50", "60", "70", "80", "90", "100", "110");
+        }
+        return Arrays.asList("help", "aa", "shading", "shadows", "dithering", "fov");
     }
 }

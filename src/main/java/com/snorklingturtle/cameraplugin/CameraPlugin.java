@@ -29,6 +29,7 @@ public class CameraPlugin extends JavaPlugin {
 
     public static final int MAP_SIZE = 128;
 
+    public static double fieldOfView = 70;
     public static boolean hasAntiAliasing = true;
     public static boolean hasShading = true;
     public static boolean hasShadows = true;
@@ -39,12 +40,12 @@ public class CameraPlugin extends JavaPlugin {
     public static final String CONFIG_KEY_RECIPE_SHAPE = "settings.camera.recipe.shape";
     public static final String CONFIG_KEY_SKIN_URL = "settings.camera.skinUrl";
     public static final String CONFIG_KEY_RECIPE_INGREDIENTS = "settings.camera.recipe.ingredients";
-    private static final String CONFIG_KEY_DITHERING = "settings.camera.dithering";
-    private static final String CONFIG_KEY_ANTIALIASING = "settings.camera.antialiasing";
-    private static final String CONFIG_KEY_SHADOWS = "settings.camera.shadows";
-    private static final String CONFIG_KEY_SHADING = "settings.camera.shading";
-    public static final String CONFIG_KEY_FIELD_OF_VIEW = "settings.camera.fieldOfView";
     public static final String CONFIG_KEY_CAPTURE_COOLDOWN = "settings.camera.cooldown";
+    private static final String CONFIG_KEY_DITHERING = "settings.camera.properties.dithering";
+    private static final String CONFIG_KEY_ANTIALIASING = "settings.camera.properties.antialiasing";
+    private static final String CONFIG_KEY_SHADOWS = "settings.camera.properties.shadows";
+    private static final String CONFIG_KEY_SHADING = "settings.camera.properties.shading";
+    private static final String CONFIG_KEY_FIELD_OF_VIEW = "settings.camera.properties.fieldOfView";
 
     public static List<Integer> cachedMapIDs = new ArrayList<>();
 
@@ -77,6 +78,8 @@ public class CameraPlugin extends JavaPlugin {
             CameraRecipe.addRecipe(this, recipeItemKey, config);
         }
 
+        // Default camera properties
+        fieldOfView = Math.toRadians(config.getInt(CONFIG_KEY_FIELD_OF_VIEW));
         hasAntiAliasing = config.getBoolean(CONFIG_KEY_ANTIALIASING);
         hasShading = config.getBoolean(CONFIG_KEY_SHADING);
         hasShadows = config.getBoolean(CONFIG_KEY_SHADOWS);

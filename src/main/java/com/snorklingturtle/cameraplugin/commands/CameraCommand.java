@@ -24,10 +24,11 @@ public class CameraCommand implements CommandExecutor {
             player.sendMessage("§6=== Camera ===");
             player.sendMessage("§7Right-click while holding a camera in your hand to take a photo.");
 
+            player.sendMessage("§e/camera fov <value> §7- Change field of view (default = 70).");
             player.sendMessage("§e/camera aa §7- Toggle anti-aliasing.");
-            player.sendMessage("§e/camera dither §7- Toggle dithering.");
-            player.sendMessage("§e/camera shade §7- Toggles shading of each side of a block.");
-            player.sendMessage("§e/camera shadow §7- Toggles shadows depending on light level.");
+            player.sendMessage("§e/camera dithering §7- Toggle dithering.");
+            player.sendMessage("§e/camera shading §7- Toggles shading of each side of a block.");
+            player.sendMessage("§e/camera shadows §7- Toggles shadows depending on light level.");
             return true;
         }
 
@@ -37,19 +38,25 @@ public class CameraCommand implements CommandExecutor {
             return true;
         }
 
-        if (args.length == 1 && args[0].equalsIgnoreCase("shade")) {
+        if (args.length == 2 && args[0].equalsIgnoreCase("fov")) {
+            CameraPlugin.fieldOfView = Math.toRadians(Double.parseDouble(args[1]));
+            player.sendMessage("§6Field of view set to ".concat(args[1]));
+            return true;
+        }
+
+        if (args.length == 1 && args[0].equalsIgnoreCase("shading")) {
             CameraPlugin.hasShading = !CameraPlugin.hasShading;
             player.sendMessage("§6Shading ".concat(CameraPlugin.hasShading ? "enabled" : "disabled"));
             return true;
         }
 
-        if (args.length == 1 && args[0].equalsIgnoreCase("shadow")) {
+        if (args.length == 1 && args[0].equalsIgnoreCase("shadows")) {
             CameraPlugin.hasShadows = !CameraPlugin.hasShadows;
             player.sendMessage("§6Shadows ".concat(CameraPlugin.hasShadows ? "enabled" : "disabled"));
             return true;
         }
 
-        if (args.length == 1 && args[0].equalsIgnoreCase("dither")) {
+        if (args.length == 1 && args[0].equalsIgnoreCase("dithering")) {
             CameraPlugin.hasDithering = !CameraPlugin.hasDithering;
             player.sendMessage("§6Dithering ".concat(CameraPlugin.hasDithering ? "enabled" : "disabled"));
             return true;

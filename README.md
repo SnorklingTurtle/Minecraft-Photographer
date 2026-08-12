@@ -33,9 +33,9 @@ Photos are stored in a SQLite database at `plugins/Minecraft-Photographer/photos
 
 * `/camera help` - List of helpful commands.
 * `/camera aa` - Toggles anti-aliasing
-* `/camera shade` - Toggles shading on blocks.
-* `/camera shadow` - Toggles shadows.
-* `/camera dither` - Toggles dithering.
+* `/camera shading` - Toggles shading on blocks.
+* `/camera shadows` - Toggles shadows.
+* `/camera dithering` - Toggles dithering.
 
 ## Permissions
 
@@ -75,8 +75,10 @@ world. Map IDs will no longer match those in the database, which might end up in
 * [Idea] Framing
 * [Idea] Toggle sky gradient
 * [Fix] [Skull rendering on Geyser](https://geysermc.org/wiki/geyser/custom-skulls/)
+* [Idea] Add a `/camera silly` command - to take silly photos
 * [Idea] Add option to change Overworld, Nether and End sky colors.
 * [Idea] Use getBlockData().getMapColor() and fallback to color-mapping.config only if needed
+* [Idea] Store camera properties per camera
 * [Optimize] Can converting colors from string be improved
 
 

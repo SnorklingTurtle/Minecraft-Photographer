@@ -1,5 +1,11 @@
 settings:
   camera:
+    properties:
+      fieldOfView: 70
+      shading: true
+      shadows: true
+      dithering: true
+      antialiasing: true
     recipe:
       ingredients:
         I: IRON_INGOT
@@ -13,11 +19,6 @@ settings:
       enabled: true
     # Per player cooldown between each capture. 20 = 1 second
     cooldown: 20
-    shading: true
-    shadows: true
-    dithering: true
-    antialiasing: true
-    fieldOfView: 70
     # Lower number is more performant
     renderDistance: 128
     # Skin must be located at one of Mojangs/Minecrafts whitelisted domains.

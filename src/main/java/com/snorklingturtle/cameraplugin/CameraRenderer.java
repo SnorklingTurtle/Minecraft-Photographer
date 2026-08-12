@@ -54,13 +54,12 @@ public class CameraRenderer {
         double renderDistance = plugin.getConfig().getInt(CameraPlugin.CONFIG_KEY_RENDER_DISTANCE);
 
         World world = player.getWorld();
-        double fieldOfView = Math.toRadians(plugin.getConfig().getInt(CameraPlugin.CONFIG_KEY_FIELD_OF_VIEW));
 
         TraceResult traceResult = trace(
                 world,
                 player,
                 renderDistance,
-                fieldOfView,
+                CameraPlugin.fieldOfView,
                 CameraRenderer::PostProcessing
         );
 
