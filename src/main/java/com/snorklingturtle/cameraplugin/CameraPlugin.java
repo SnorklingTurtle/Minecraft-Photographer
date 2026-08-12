@@ -54,8 +54,6 @@ public class CameraPlugin extends JavaPlugin {
         cameraItemKey = new NamespacedKey(this, "camera_item");
         recipeItemKey = new NamespacedKey(this, "camera_recipe");
 
-        getLogger().info("Camera enabled!");
-
         // Register listeners
         getServer().getPluginManager().registerEvents(new PlayerJoin(this), this);
         getServer().getPluginManager().registerEvents(new PrepareItemCraft(this), this);
@@ -96,10 +94,9 @@ public class CameraPlugin extends JavaPlugin {
         Storage.disconnect(this, dbConnection);
     }
 
-    @Override
-    public void onDisable() {
-        getLogger().info("Camera disabled.");
-    }
+//    @Override
+//    public void onDisable() {
+//    }
 
     private void initializePhotos(Connection dbConnection) {
         ResultSet mapsResultSet = Storage.getAll(this, dbConnection);
