@@ -39,8 +39,20 @@ public class CameraCommand implements CommandExecutor {
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("fov")) {
-            Photographer.fieldOfView = Math.toRadians(Double.parseDouble(args[1]));
-            player.sendMessage("§6Field of view set to ".concat(args[1]));
+            Integer fieldOfView;
+            try {
+                fieldOfView = Integer.parseInt(args[1]);
+                if (fieldOfView < 30 || fieldOfView > 110) {
+                    throw new NumberFormatException();
+                }
+            }
+            catch (NumberFormatException e)
+            {
+                player.sendMessage("§cField of view must be between 30 and 110.");
+                return true;
+            }
+            Photographer.fieldOfView = Math.toRadians(fieldOfView);
+            player.sendMessage("§6Field of view set to ".concat(String.valueOf(fieldOfView)));
             return true;
         }
 
