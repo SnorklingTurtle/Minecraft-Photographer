@@ -1,9 +1,9 @@
-package com.snorklingturtle.cameraplugin;
+package com.snorklingturtle.photographer;
 
-import com.snorklingturtle.cameraplugin.commands.CameraCommand;
-import com.snorklingturtle.cameraplugin.commands.CameraCommandTabCompleter;
-import com.snorklingturtle.cameraplugin.listeners.*;
-import com.snorklingturtle.cameraplugin.util.ByteArrayCompression;
+import com.snorklingturtle.photographer.commands.CameraCommand;
+import com.snorklingturtle.photographer.commands.CameraCommandTabCompleter;
+import com.snorklingturtle.photographer.listeners.*;
+import com.snorklingturtle.photographer.util.ByteArrayCompression;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.PluginCommand;
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.DataFormatException;
 
-public class CameraPlugin extends JavaPlugin {
+public class Photographer extends JavaPlugin {
 
     // Key used to tag the camera item in PersistentDataContainer
     public static NamespacedKey cameraItemKey;

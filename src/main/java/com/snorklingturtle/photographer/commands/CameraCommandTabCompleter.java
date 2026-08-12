@@ -1,4 +1,4 @@
-package com.snorklingturtle.cameraplugin.commands;
+package com.snorklingturtle.photographer.commands;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;

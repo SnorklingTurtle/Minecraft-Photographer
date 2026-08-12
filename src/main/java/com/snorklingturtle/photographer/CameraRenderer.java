@@ -1,8 +1,7 @@
-package com.snorklingturtle.cameraplugin;
+package com.snorklingturtle.photographer;
 
-import com.snorklingturtle.cameraplugin.util.PhotoUtil;
-import com.snorklingturtle.cameraplugin.util.RaycastUtil;
-import com.snorklingturtle.cameraplugin.util.RaycastUtil.RayHit;
+import com.snorklingturtle.photographer.util.RaycastUtil;
+import com.snorklingturtle.photographer.util.RaycastUtil.RayHit;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -50,8 +49,8 @@ public class CameraRenderer {
         Color getColor(RaycastUtil.RayHit hit, org.bukkit.util.Vector ray, String worldName, long worldTime, int positionY);
     }
 
-    public static void capture(Player player, CameraPlugin plugin) {
-        double renderDistance = plugin.getConfig().getInt(CameraPlugin.CONFIG_KEY_RENDER_DISTANCE);
+    public static void capture(Player player, Photographer plugin) {
+        double renderDistance = plugin.getConfig().getInt(Photographer.CONFIG_KEY_RENDER_DISTANCE);
 
         World world = player.getWorld();
 
@@ -59,20 +58,20 @@ public class CameraRenderer {
                 world,
                 player,
                 renderDistance,
-                CameraPlugin.fieldOfView,
+                Photographer.fieldOfView,
                 CameraRenderer::PostProcessing
         );
 
         // Optional dithering
         byte[] pixels;
-        if (CameraPlugin.hasDithering) {
+        if (Photographer.hasDithering) {
             // Floyd–Steinberg dithering → final byte[] pixel buffer
             pixels = ditherToMapPalette(traceResult.RawR, traceResult.RawG, traceResult.RawB);
         } else {
-            pixels = new byte[CameraPlugin.MAP_SIZE * CameraPlugin.MAP_SIZE];
-            for (int py = 0; py < CameraPlugin.MAP_SIZE; py++) {
-                for (int px = 0; px < CameraPlugin.MAP_SIZE; px++) {
-                    pixels[py * CameraPlugin.MAP_SIZE + px] = MapPalette.matchColor(
+            pixels = new byte[Photographer.MAP_SIZE * Photographer.MAP_SIZE];
+            for (int py = 0; py < Photographer.MAP_SIZE; py++) {
+                for (int px = 0; px < Photographer.MAP_SIZE; px++) {
+                    pixels[py * Photographer.MAP_SIZE + px] = MapPalette.matchColor(
                             clamp(Math.round(traceResult.RawR[px][py])),
                             clamp(Math.round(traceResult.RawG[px][py])),
                             clamp(Math.round(traceResult.RawB[px][py]))
@@ -97,9 +96,9 @@ public class CameraRenderer {
                 public void render(MapView view, MapCanvas canvas, Player viewer) {
                     if (done) return;
                     done = true;
-                    for (int py = 0; py < CameraPlugin.MAP_SIZE; py++) {
-                        for (int px = 0; px < CameraPlugin.MAP_SIZE; px++) {
-                            canvas.setPixel(px, py, pixels[py * CameraPlugin.MAP_SIZE + px]);
+                    for (int py = 0; py < Photographer.MAP_SIZE; py++) {
+                        for (int px = 0; px < Photographer.MAP_SIZE; px++) {
+                            canvas.setPixel(px, py, pixels[py * Photographer.MAP_SIZE + px]);
                         }
                     }
                 }
@@ -127,7 +126,7 @@ public class CameraRenderer {
             player.getInventory().addItem(mapItem);
 
             // Cache ID
-            CameraPlugin.cachedMapIDs.add(mapView.getId());
+            Photographer.cachedMapIDs.add(mapView.getId());
 
             // Save to database
             Connection dbConnection = Storage.connect(plugin);
@@ -149,11 +148,11 @@ public class CameraRenderer {
             // Fallback color if both shading and shadows are disabled
             c = ColorPalette.getBaseColor(hit.material);
 
-            if (CameraPlugin.hasShading)
+            if (Photographer.hasShading)
             {
                 c = shadedColor(c, hit.face);
             }
-            if (CameraPlugin.hasShadows)
+            if (Photographer.hasShadows)
             {
                 c = shadowColor(c, hit.lightLevel);
             }
@@ -175,15 +174,15 @@ public class CameraRenderer {
         org.bukkit.util.Vector up = right.clone().crossProduct(forward).normalize();
 
         // Raytrace all pixels and collect raw (shaded) RGB floats ---
-        float[][] rawR = new float[CameraPlugin.MAP_SIZE][CameraPlugin.MAP_SIZE];
-        float[][] rawG = new float[CameraPlugin.MAP_SIZE][CameraPlugin.MAP_SIZE];
-        float[][] rawB = new float[CameraPlugin.MAP_SIZE][CameraPlugin.MAP_SIZE];
+        float[][] rawR = new float[Photographer.MAP_SIZE][Photographer.MAP_SIZE];
+        float[][] rawG = new float[Photographer.MAP_SIZE][Photographer.MAP_SIZE];
+        float[][] rawB = new float[Photographer.MAP_SIZE][Photographer.MAP_SIZE];
 
-        if (CameraPlugin.hasAntiAliasing) {
+        if (Photographer.hasAntiAliasing) {
             final double SS_STEP = 1.0 / SUPER_SAMPLING;
 
-            for (int py = 0; py < CameraPlugin.MAP_SIZE; py++) {
-                for (int px = 0; px < CameraPlugin.MAP_SIZE; px++) {
+            for (int py = 0; py < Photographer.MAP_SIZE; py++) {
+                for (int px = 0; px < Photographer.MAP_SIZE; px++) {
 
                     float accR = 0, accG = 0, accB = 0;
 
@@ -194,8 +193,8 @@ public class CameraRenderer {
                             double subX = (sx + 0.5) * SS_STEP - 0.5;
                             double subY = (sy + 0.5) * SS_STEP - 0.5;
 
-                            double ndcX = ((px + subX) / (CameraPlugin.MAP_SIZE - 1.0)) * 2.0 - 1.0;
-                            double ndcY = -(((py + subY) / (CameraPlugin.MAP_SIZE - 1.0)) * 2.0 - 1.0);
+                            double ndcX = ((px + subX) / (Photographer.MAP_SIZE - 1.0)) * 2.0 - 1.0;
+                            double ndcY = -(((py + subY) / (Photographer.MAP_SIZE - 1.0)) * 2.0 - 1.0);
 
                             double halfFov = fieldOfView / 2.0;
                             org.bukkit.util.Vector ray = forward.clone()
@@ -222,11 +221,11 @@ public class CameraRenderer {
                 }
             }
         } else {
-            for (int py = 0; py < CameraPlugin.MAP_SIZE; py++) {
-                for (int px = 0; px < CameraPlugin.MAP_SIZE; px++) {
+            for (int py = 0; py < Photographer.MAP_SIZE; py++) {
+                for (int px = 0; px < Photographer.MAP_SIZE; px++) {
                     // NDC from −1 to +1
-                    double ndcX = (px / (CameraPlugin.MAP_SIZE - 1.0)) * 2.0 - 1.0;
-                    double ndcY = -((py / (CameraPlugin.MAP_SIZE - 1.0)) * 2.0 - 1.0); // flip Y (screen coords)
+                    double ndcX = (px / (Photographer.MAP_SIZE - 1.0)) * 2.0 - 1.0;
+                    double ndcY = -((py / (Photographer.MAP_SIZE - 1.0)) * 2.0 - 1.0); // flip Y (screen coords)
 
                     double halfFov = fieldOfView / 2.0;
                     org.bukkit.util.Vector ray = forward.clone()
@@ -369,10 +368,10 @@ public class CameraRenderer {
         float[][] g = deepCopy(gBuf);
         float[][] b = deepCopy(bBuf);
 
-        byte[] out = new byte[CameraPlugin.MAP_SIZE * CameraPlugin.MAP_SIZE];
+        byte[] out = new byte[Photographer.MAP_SIZE * Photographer.MAP_SIZE];
 
-        for (int py = 0; py < CameraPlugin.MAP_SIZE; py++) {
-            for (int px = 0; px < CameraPlugin.MAP_SIZE; px++) {
+        for (int py = 0; py < Photographer.MAP_SIZE; py++) {
+            for (int px = 0; px < Photographer.MAP_SIZE; px++) {
                 // Clamp accumulated value to valid byte range
                 int ri = clamp(Math.round(r[px][py]));
                 int gi = clamp(Math.round(g[px][py]));
@@ -380,7 +379,7 @@ public class CameraRenderer {
 
                 // Quantise to nearest map palette color
                 byte mapByte = MapPalette.matchColor(ri, gi, bi);
-                out[py * CameraPlugin.MAP_SIZE + px] = mapByte;
+                out[py * Photographer.MAP_SIZE + px] = mapByte;
 
                 // Recover the actual RGB the palette chose
                 Color actual = MapPalette.getColor(mapByte);
@@ -389,25 +388,25 @@ public class CameraRenderer {
                 float errB = bi - actual.getBlue();
 
                 // Distribute error to right neighbour (7/16)
-                if (px + 1 < CameraPlugin.MAP_SIZE) {
+                if (px + 1 < Photographer.MAP_SIZE) {
                     r[px+1][py]   += errR * (7f/16f);
                     g[px+1][py]   += errG * (7f/16f);
                     b[px+1][py]   += errB * (7f/16f);
                 }
                 // Distribute error to bottom-left neighbour (3/16)
-                if (px - 1 >= 0 && py + 1 < CameraPlugin.MAP_SIZE) {
+                if (px - 1 >= 0 && py + 1 < Photographer.MAP_SIZE) {
                     r[px-1][py+1] += errR * (3f/16f);
                     g[px-1][py+1] += errG * (3f/16f);
                     b[px-1][py+1] += errB * (3f/16f);
                 }
                 // Distribute error to bottom neighbour (5/16)
-                if (py + 1 < CameraPlugin.MAP_SIZE) {
+                if (py + 1 < Photographer.MAP_SIZE) {
                     r[px][py+1]   += errR * (5f/16f);
                     g[px][py+1]   += errG * (5f/16f);
                     b[px][py+1]   += errB * (5f/16f);
                 }
                 // Distribute error to bottom-right neighbour (1/16)
-                if (px + 1 < CameraPlugin.MAP_SIZE && py + 1 < CameraPlugin.MAP_SIZE) {
+                if (px + 1 < Photographer.MAP_SIZE && py + 1 < Photographer.MAP_SIZE) {
                     r[px+1][py+1] += errR * (1f/16f);
                     g[px+1][py+1] += errG * (1f/16f);
                     b[px+1][py+1] += errB * (1f/16f);

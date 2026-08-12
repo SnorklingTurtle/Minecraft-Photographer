@@ -1,4 +1,4 @@
-package com.snorklingturtle.cameraplugin.util;
+package com.snorklingturtle.photographer.util;
 
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;

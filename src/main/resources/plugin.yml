@@ -1,5 +1,5 @@
-main: com.snorklingturtle.cameraplugin.CameraPlugin
-name: CameraPlugin
+main: com.snorklingturtle.photographer.Photographer
+name: Photographer
 version: 1.0.0
 description: A Minecraft camera plugin that renders photos onto maps.
 author: SkooterKurt

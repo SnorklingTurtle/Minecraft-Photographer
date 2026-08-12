@@ -1,8 +1,8 @@
-package com.snorklingturtle.cameraplugin.listeners;
+package com.snorklingturtle.photographer.listeners;
 
-import com.snorklingturtle.cameraplugin.CameraPlugin;
-import com.snorklingturtle.cameraplugin.Storage;
-import com.snorklingturtle.cameraplugin.util.PhotoUtil;
+import com.snorklingturtle.photographer.Photographer;
+import com.snorklingturtle.photographer.Storage;
+import com.snorklingturtle.photographer.util.PhotoUtil;
 import org.bukkit.entity.Item;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -16,8 +16,8 @@ import java.util.HashSet;
 
 public class PhotoDestroy implements Listener {
 
-    private final CameraPlugin plugin;
-    public PhotoDestroy(CameraPlugin plugin) {
+    private final Photographer plugin;
+    public PhotoDestroy(Photographer plugin) {
         this.plugin = plugin;
     }
 

@@ -1,6 +1,6 @@
-package com.snorklingturtle.cameraplugin.commands;
+package com.snorklingturtle.photographer.commands;
 
-import com.snorklingturtle.cameraplugin.CameraPlugin;
+import com.snorklingturtle.photographer.Photographer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -33,32 +33,32 @@ public class CameraCommand implements CommandExecutor {
         }
 
         if (args.length == 1 && args[0].equalsIgnoreCase("aa")) {
-            CameraPlugin.hasAntiAliasing = !CameraPlugin.hasAntiAliasing;
-            player.sendMessage("§6Anti-aliasing ".concat(CameraPlugin.hasAntiAliasing ? "enabled" : "disabled"));
+            Photographer.hasAntiAliasing = !Photographer.hasAntiAliasing;
+            player.sendMessage("§6Anti-aliasing ".concat(Photographer.hasAntiAliasing ? "enabled" : "disabled"));
             return true;
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("fov")) {
-            CameraPlugin.fieldOfView = Math.toRadians(Double.parseDouble(args[1]));
+            Photographer.fieldOfView = Math.toRadians(Double.parseDouble(args[1]));
             player.sendMessage("§6Field of view set to ".concat(args[1]));
             return true;
         }
 
         if (args.length == 1 && args[0].equalsIgnoreCase("shading")) {
-            CameraPlugin.hasShading = !CameraPlugin.hasShading;
-            player.sendMessage("§6Shading ".concat(CameraPlugin.hasShading ? "enabled" : "disabled"));
+            Photographer.hasShading = !Photographer.hasShading;
+            player.sendMessage("§6Shading ".concat(Photographer.hasShading ? "enabled" : "disabled"));
             return true;
         }
 
         if (args.length == 1 && args[0].equalsIgnoreCase("shadows")) {
-            CameraPlugin.hasShadows = !CameraPlugin.hasShadows;
-            player.sendMessage("§6Shadows ".concat(CameraPlugin.hasShadows ? "enabled" : "disabled"));
+            Photographer.hasShadows = !Photographer.hasShadows;
+            player.sendMessage("§6Shadows ".concat(Photographer.hasShadows ? "enabled" : "disabled"));
             return true;
         }
 
         if (args.length == 1 && args[0].equalsIgnoreCase("dithering")) {
-            CameraPlugin.hasDithering = !CameraPlugin.hasDithering;
-            player.sendMessage("§6Dithering ".concat(CameraPlugin.hasDithering ? "enabled" : "disabled"));
+            Photographer.hasDithering = !Photographer.hasDithering;
+            player.sendMessage("§6Dithering ".concat(Photographer.hasDithering ? "enabled" : "disabled"));
             return true;
         }
 

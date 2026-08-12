@@ -1,6 +1,6 @@
-package com.snorklingturtle.cameraplugin.util;
+package com.snorklingturtle.photographer.util;
 
-import com.snorklingturtle.cameraplugin.CameraPlugin;
+import com.snorklingturtle.photographer.Photographer;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.MapMeta;
@@ -16,7 +16,7 @@ public class PhotoUtil {
         if (mapId == null)
             return false;
 
-        return CameraPlugin.cachedMapIDs.contains(mapId);
+        return Photographer.cachedMapIDs.contains(mapId);
     }
 
     public static Integer getMapId(ItemStack item)

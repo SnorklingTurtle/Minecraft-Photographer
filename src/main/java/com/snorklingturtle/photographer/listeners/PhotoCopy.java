@@ -1,8 +1,8 @@
-package com.snorklingturtle.cameraplugin.listeners;
+package com.snorklingturtle.photographer.listeners;
 
-import com.snorklingturtle.cameraplugin.CameraPlugin;
-import com.snorklingturtle.cameraplugin.Storage;
-import com.snorklingturtle.cameraplugin.util.PhotoUtil;
+import com.snorklingturtle.photographer.Photographer;
+import com.snorklingturtle.photographer.Storage;
+import com.snorklingturtle.photographer.util.PhotoUtil;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,8 +19,8 @@ import java.sql.Connection;
 
 public class PhotoCopy implements Listener {
 
-    private final CameraPlugin plugin;
-    public PhotoCopy(CameraPlugin plugin) {
+    private final Photographer plugin;
+    public PhotoCopy(Photographer plugin) {
         this.plugin = plugin;
     }
 

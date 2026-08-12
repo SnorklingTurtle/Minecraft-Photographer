@@ -1,9 +1,9 @@
-package com.snorklingturtle.cameraplugin.listeners;
+package com.snorklingturtle.photographer.listeners;
 
-import com.snorklingturtle.cameraplugin.CameraItem;
-import com.snorklingturtle.cameraplugin.CameraPlugin;
-import com.snorklingturtle.cameraplugin.CameraRenderer;
-import com.snorklingturtle.cameraplugin.util.InventoryUtil;
+import com.snorklingturtle.photographer.CameraItem;
+import com.snorklingturtle.photographer.Photographer;
+import com.snorklingturtle.photographer.CameraRenderer;
+import com.snorklingturtle.photographer.util.InventoryUtil;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.Sound;
@@ -19,8 +19,8 @@ import java.util.UUID;
 
 public class CameraClick implements Listener {
 
-    private final CameraPlugin plugin;
-    public CameraClick(CameraPlugin plugin) {
+    private final Photographer plugin;
+    public CameraClick(Photographer plugin) {
         this.plugin = plugin;
     }
 
@@ -32,7 +32,7 @@ public class CameraClick implements Listener {
         Player player = event.getPlayer();
 
         ItemStack held = player.getInventory().getItemInMainHand();
-        if (!CameraItem.isCamera(held, CameraPlugin.cameraItemKey)) return;
+        if (!CameraItem.isCamera(held, Photographer.cameraItemKey)) return;
 
         event.setCancelled(true);
 
@@ -57,7 +57,7 @@ public class CameraClick implements Listener {
         if (cooldown.contains(id)) return;
         cooldown.add(id);
 
-        int captureCooldown = plugin.getConfig().getInt(CameraPlugin.CONFIG_KEY_CAPTURE_COOLDOWN);
+        int captureCooldown = plugin.getConfig().getInt(Photographer.CONFIG_KEY_CAPTURE_COOLDOWN);
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> cooldown.remove(id), captureCooldown);
 
         if (!player.hasPermission("camera.use")) {

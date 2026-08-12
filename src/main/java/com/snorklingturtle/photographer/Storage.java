@@ -1,6 +1,6 @@
-package com.snorklingturtle.cameraplugin;
+package com.snorklingturtle.photographer;
 
-import com.snorklingturtle.cameraplugin.util.ByteArrayCompression;
+import com.snorklingturtle.photographer.util.ByteArrayCompression;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -10,7 +10,7 @@ public class Storage {
 
     final static String tableName = "photos";
 
-    public static Connection connect(CameraPlugin plugin) {
+    public static Connection connect(Photographer plugin) {
         String folder = plugin.getDataFolder().getAbsolutePath();
         Connection conn = null;
 
@@ -27,7 +27,7 @@ public class Storage {
         return conn;
     }
 
-    public static void disconnect(CameraPlugin plugin, Connection conn) {
+    public static void disconnect(Photographer plugin, Connection conn) {
         try {
             if (conn != null) {
                 conn.close();
@@ -37,7 +37,7 @@ public class Storage {
         }
     }
 
-    public static void createTable(CameraPlugin plugin, Connection conn) {
+    public static void createTable(Photographer plugin, Connection conn) {
         String query = String.format( "CREATE TABLE IF NOT EXISTS %s (\n"
                 + " id              INTEGER         PRIMARY KEY,\n"
                 + " map_id          INTEGER         NOT NULL,\n"
@@ -63,7 +63,7 @@ public class Storage {
         }
     }
 
-    public static void createCleanUpTrigger(CameraPlugin plugin, Connection conn) {
+    public static void createCleanUpTrigger(Photographer plugin, Connection conn) {
         String query = String.format("CREATE TRIGGER IF NOT EXISTS photo_cleanup\n" +
                 "   AFTER UPDATE\n" +
                 "   ON photos\n" +
@@ -85,11 +85,11 @@ public class Storage {
 
 
 
-    public static void store(CameraPlugin plugin, Connection conn, int id, long seed, byte[] data, UUID photographer, int counter) {
+    public static void store(Photographer plugin, Connection conn, int id, long seed, byte[] data, UUID photographer, int counter) {
         store(plugin, conn, id, seed, data, photographer, counter, null, null);
     }
 
-    public static void store(CameraPlugin plugin, Connection conn, int id, long seed, byte[] data, UUID photographer, int counter, String tag, UUID tagger) {
+    public static void store(Photographer plugin, Connection conn, int id, long seed, byte[] data, UUID photographer, int counter, String tag, UUID tagger) {
         String query = String.format("INSERT INTO %s (map_id, seed, data, created, tag, tagger, photographer, counter) VALUES(?,?,?,?,?,?,?,?);", Storage.tableName);
 
         try
@@ -113,7 +113,7 @@ public class Storage {
         }
     }
 
-    public static ResultSet getAll(CameraPlugin plugin, Connection conn) {
+    public static ResultSet getAll(Photographer plugin, Connection conn) {
         String query = String.format("SELECT map_id,data FROM %s;", Storage.tableName);
         ResultSet rs = null;
 
@@ -130,7 +130,7 @@ public class Storage {
         return rs;
     }
 
-    public static ResultSet getBySeed(CameraPlugin plugin, Connection conn, long seed) {
+    public static ResultSet getBySeed(Photographer plugin, Connection conn, long seed) {
         String query = String.format("SELECT map_id,data FROM %s WHERE seed=?;", Storage.tableName);
         ResultSet rs = null;
 
@@ -148,7 +148,7 @@ public class Storage {
         return rs;
     }
 
-    public static void updateCounter(CameraPlugin plugin, Connection conn, Integer map_id, long world_seed, int amount) {
+    public static void updateCounter(Photographer plugin, Connection conn, Integer map_id, long world_seed, int amount) {
         String query = String.format("UPDATE %s SET counter=(counter+?) WHERE map_id=? AND seed=?;", Storage.tableName);
 
         try
@@ -165,7 +165,7 @@ public class Storage {
         }
     }
 
-    public static boolean updateTag(CameraPlugin plugin, Connection conn, Integer map_id, long world_seed, String tag, UUID taggerUUID) {
+    public static boolean updateTag(Photographer plugin, Connection conn, Integer map_id, long world_seed, String tag, UUID taggerUUID) {
         String query = String.format("UPDATE %s SET tag=?, tagger=? WHERE map_id=? AND seed=?;", Storage.tableName);
 
         try
@@ -184,7 +184,7 @@ public class Storage {
         return false;
     }
 
-    public static ResultSet getById(CameraPlugin plugin, Connection conn, Integer map_id, long world_seed) {
+    public static ResultSet getById(Photographer plugin, Connection conn, Integer map_id, long world_seed) {
         String query = String.format("SELECT map_id,data,tag FROM %s WHERE map_id=? AND seed=? LIMIT 1;", Storage.tableName);
         ResultSet rs = null;
 
@@ -203,7 +203,7 @@ public class Storage {
         return rs;
     }
 
-    public static ResultSet getByTag(CameraPlugin plugin, Connection conn, String tag) {
+    public static ResultSet getByTag(Photographer plugin, Connection conn, String tag) {
         String query = String.format("SELECT map_id,data,tag,seed,photographer FROM %s WHERE tag=? LIMIT 1;", Storage.tableName);
         ResultSet rs = null;
 
@@ -221,7 +221,7 @@ public class Storage {
         return rs;
     }
 
-    public static ResultSet getTagsByPlayer(CameraPlugin plugin, Connection conn, UUID playerUUID, int amount) {
+    public static ResultSet getTagsByPlayer(Photographer plugin, Connection conn, UUID playerUUID, int amount) {
         String query = String.format("SELECT tag FROM %s WHERE tagger=? ORDER BY RANDOM() LIMIT ?;", Storage.tableName);
         ResultSet rs = null;
 

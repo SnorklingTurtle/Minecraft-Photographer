@@ -1,4 +1,4 @@
-package com.snorklingturtle.cameraplugin;
+package com.snorklingturtle.photographer;
 
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;

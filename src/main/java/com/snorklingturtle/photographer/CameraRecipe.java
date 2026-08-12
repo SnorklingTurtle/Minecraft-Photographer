@@ -1,4 +1,4 @@
-package com.snorklingturtle.cameraplugin;
+package com.snorklingturtle.photographer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -19,7 +19,7 @@ import java.util.*;
 
 public class CameraRecipe {
 
-    public static void addRecipe(CameraPlugin plugin, NamespacedKey recipeKey, FileConfiguration config) {
+    public static void addRecipe(Photographer plugin, NamespacedKey recipeKey, FileConfiguration config) {
         ItemStack camera = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta cameraMeta = (SkullMeta) camera.getItemMeta();
 
@@ -28,7 +28,7 @@ public class CameraRecipe {
 
         // Get texture from URL
         try {
-            String skinUrl = config.getString(CameraPlugin.CONFIG_KEY_SKIN_URL);
+            String skinUrl = config.getString(Photographer.CONFIG_KEY_SKIN_URL);
             if (skinUrl != null && skinUrl.trim().startsWith("http"))
             {
                 customPlayerTextures.setSkin(new URL(skinUrl.trim()));
@@ -48,18 +48,18 @@ public class CameraRecipe {
             cameraMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS);
 
             // Mark item as a camera - this way we can later check for its existence
-            cameraMeta.getPersistentDataContainer().set(CameraPlugin.cameraItemKey, PersistentDataType.INTEGER, 1);
+            cameraMeta.getPersistentDataContainer().set(Photographer.cameraItemKey, PersistentDataType.INTEGER, 1);
         }
 
         camera.setItemMeta(cameraMeta);
 
         ShapedRecipe recipe = new ShapedRecipe(recipeKey, camera);
 
-        ArrayList<String> shapeArr = (ArrayList<String>) config.get(CameraPlugin.CONFIG_KEY_RECIPE_SHAPE);
+        ArrayList<String> shapeArr = (ArrayList<String>) config.get(Photographer.CONFIG_KEY_RECIPE_SHAPE);
         recipe.shape(shapeArr.toArray(new String[0]));
 
-        for (String ingredientKey : config.getConfigurationSection(CameraPlugin.CONFIG_KEY_RECIPE_INGREDIENTS).getKeys(false)) {
-            recipe.setIngredient(ingredientKey.charAt(0), Material.valueOf((String) config.get(CameraPlugin.CONFIG_KEY_RECIPE_INGREDIENTS.concat(".").concat(ingredientKey))));
+        for (String ingredientKey : config.getConfigurationSection(Photographer.CONFIG_KEY_RECIPE_INGREDIENTS).getKeys(false)) {
+            recipe.setIngredient(ingredientKey.charAt(0), Material.valueOf((String) config.get(Photographer.CONFIG_KEY_RECIPE_INGREDIENTS.concat(".").concat(ingredientKey))));
         }
 
         Bukkit.addRecipe(recipe);

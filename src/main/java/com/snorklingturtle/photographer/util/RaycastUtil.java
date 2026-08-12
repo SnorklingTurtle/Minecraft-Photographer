@@ -1,4 +1,4 @@
-package com.snorklingturtle.cameraplugin.util;
+package com.snorklingturtle.photographer.util;
 
 import org.bukkit.Location;
 import org.bukkit.Material;

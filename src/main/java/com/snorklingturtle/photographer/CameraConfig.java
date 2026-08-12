@@ -1,6 +1,6 @@
-package com.snorklingturtle.cameraplugin;
+package com.snorklingturtle.photographer;
 
-import com.snorklingturtle.cameraplugin.util.FileUtil;
+import com.snorklingturtle.photographer.util.FileUtil;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
@@ -10,7 +10,7 @@ public class CameraConfig {
 
     private static FileConfiguration config;
 
-    public static void load(CameraPlugin plugin) {
+    public static void load(Photographer plugin) {
         if (!plugin.getDataFolder().exists()) {
             plugin.getDataFolder().mkdir();
         }
@@ -34,7 +34,7 @@ public class CameraConfig {
         config = YamlConfiguration.loadConfiguration(configFile);
     }
 
-    public static FileConfiguration getConfig(CameraPlugin plugin) {
+    public static FileConfiguration getConfig(Photographer plugin) {
         if (config == null)
         {
             load(plugin);

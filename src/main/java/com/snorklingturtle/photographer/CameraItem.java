@@ -1,4 +1,4 @@
-package com.snorklingturtle.cameraplugin;
+package com.snorklingturtle.photographer;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;

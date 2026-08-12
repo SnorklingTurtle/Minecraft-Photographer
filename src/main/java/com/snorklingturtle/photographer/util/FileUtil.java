@@ -1,6 +1,6 @@
-package com.snorklingturtle.cameraplugin.util;
+package com.snorklingturtle.photographer.util;
 
-import com.snorklingturtle.cameraplugin.CameraPlugin;
+import com.snorklingturtle.photographer.Photographer;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -10,11 +10,11 @@ import java.util.logging.Logger;
 
 public class FileUtil {
 
-    public static boolean copyResource(CameraPlugin plugin, String resourceFilePath, String destinationFilePath) {
+    public static boolean copyResource(Photographer plugin, String resourceFilePath, String destinationFilePath) {
         File folder = plugin.getDataFolder();
         Logger log = plugin.getLogger();
 
-        try (InputStream sourceStream = CameraPlugin.class.getResourceAsStream(resourceFilePath)) {
+        try (InputStream sourceStream = Photographer.class.getResourceAsStream(resourceFilePath)) {
             if (sourceStream == null)
             {
                 log.severe("Couldn't copy " + resourceFilePath + " from resource directory");
@@ -33,7 +33,7 @@ public class FileUtil {
         return true;
     }
 
-    public static boolean fileExists(CameraPlugin plugin, String destinationFilePath)
+    public static boolean fileExists(Photographer plugin, String destinationFilePath)
     {
         File folder = plugin.getDataFolder();
         return Files.exists(Paths.get(folder + destinationFilePath));
