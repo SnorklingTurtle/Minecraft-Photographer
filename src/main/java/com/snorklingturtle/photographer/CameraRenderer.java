@@ -145,8 +145,7 @@ public class CameraRenderer {
             if (sunColor  != null) c = sunColor;
             if (moonColor != null) c = moonColor;
         } else {
-            // Fallback color if both shading and shadows are disabled
-            c = ColorPalette.getBaseColor(hit.material);
+            c = ColorMapping.getBaseColor(hit.material);
 
             if (Photographer.hasShading)
             {

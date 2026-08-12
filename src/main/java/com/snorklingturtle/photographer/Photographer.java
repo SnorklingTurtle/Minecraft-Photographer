@@ -76,6 +76,9 @@ public class Photographer extends JavaPlugin {
             CameraRecipe.addRecipe(this, recipeItemKey, config);
         }
 
+        // Load color mapping from file
+        ColorMapping.load(this);
+
         // Default camera properties
         fieldOfView = Math.toRadians(config.getInt(CONFIG_KEY_FIELD_OF_VIEW));
         hasAntiAliasing = config.getBoolean(CONFIG_KEY_ANTIALIASING);

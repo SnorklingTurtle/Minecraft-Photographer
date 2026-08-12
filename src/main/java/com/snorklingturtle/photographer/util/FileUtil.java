@@ -6,6 +6,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 public class FileUtil {
@@ -37,5 +38,21 @@ public class FileUtil {
     {
         File folder = plugin.getDataFolder();
         return Files.exists(Paths.get(folder + destinationFilePath));
+    }
+
+    public static Properties getConfig(Photographer plugin, String sourceFile)
+    {
+        Properties properties = new Properties();
+        String configFilename = plugin.getDataFolder() + sourceFile;
+
+        try (FileInputStream colorMappingStream = new FileInputStream(configFilename)) {
+            properties.load(colorMappingStream);
+        }
+        catch (IOException e)
+        {
+            plugin.getLogger().severe("Config is missing or could not be opened: " + sourceFile);
+        }
+
+        return properties;
     }
 }
