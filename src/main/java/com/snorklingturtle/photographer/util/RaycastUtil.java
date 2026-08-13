@@ -9,14 +9,49 @@ import org.bukkit.util.Vector;
 
 import java.util.Map;
 
+import static java.util.Map.entry;
+
 public class RaycastUtil {
 
-    private static final double STEP   = 0.05;  // metres per step — smaller = more accurate, slower
+    private static final double STEP = 0.05;  // metres per step — smaller = more accurate, slower
 
-    public static final Map<Material, Double> TRANSPARENT_MATERIALS = Map.of(
-            Material.WATER, 0.85,
-            Material.GLASS, 0.25,
-            Material.GLASS_PANE, 0.25
+    public static final Map<Material, Double> TRANSPARENT_MATERIALS = Map.ofEntries(
+            entry(Material.WATER, 0.85d),
+            entry(Material.TINTED_GLASS, 0.85),
+            entry(Material.GLASS, 0.35),
+            entry(Material.GLASS_PANE, 0.35),
+            entry(Material.GRAY_STAINED_GLASS, 0.5),
+            entry(Material.GRAY_STAINED_GLASS_PANE, 0.5),
+            entry(Material.GREEN_STAINED_GLASS, 0.5),
+            entry(Material.GREEN_STAINED_GLASS_PANE, 0.5),
+            entry(Material.BLACK_STAINED_GLASS, 0.5),
+            entry(Material.BLACK_STAINED_GLASS_PANE, 0.5),
+            entry(Material.BLUE_STAINED_GLASS, 0.5),
+            entry(Material.BLUE_STAINED_GLASS_PANE, 0.5),
+            entry(Material.BROWN_STAINED_GLASS, 0.5),
+            entry(Material.BROWN_STAINED_GLASS_PANE, 0.5),
+            entry(Material.CYAN_STAINED_GLASS, 0.5),
+            entry(Material.CYAN_STAINED_GLASS_PANE, 0.5),
+            entry(Material.LIGHT_BLUE_STAINED_GLASS, 0.5),
+            entry(Material.LIGHT_BLUE_STAINED_GLASS_PANE, 0.5),
+            entry(Material.LIGHT_GRAY_STAINED_GLASS, 0.5),
+            entry(Material.LIGHT_GRAY_STAINED_GLASS_PANE, 0.5),
+            entry(Material.LIME_STAINED_GLASS, 0.5),
+            entry(Material.LIME_STAINED_GLASS_PANE, 0.5),
+            entry(Material.MAGENTA_STAINED_GLASS, 0.5),
+            entry(Material.MAGENTA_STAINED_GLASS_PANE, 0.5),
+            entry(Material.ORANGE_STAINED_GLASS, 0.5),
+            entry(Material.ORANGE_STAINED_GLASS_PANE, 0.5),
+            entry(Material.PINK_STAINED_GLASS, 0.5),
+            entry(Material.PINK_STAINED_GLASS_PANE, 0.5),
+            entry(Material.PURPLE_STAINED_GLASS, 0.5),
+            entry(Material.PURPLE_STAINED_GLASS_PANE, 0.5),
+            entry(Material.RED_STAINED_GLASS, 0.5),
+            entry(Material.RED_STAINED_GLASS_PANE, 0.5),
+            entry(Material.WHITE_STAINED_GLASS, 0.5),
+            entry(Material.WHITE_STAINED_GLASS_PANE, 0.5),
+            entry(Material.YELLOW_STAINED_GLASS, 0.5),
+            entry(Material.YELLOW_STAINED_GLASS_PANE, 0.5)
     );
 
     private RaycastUtil() {}
