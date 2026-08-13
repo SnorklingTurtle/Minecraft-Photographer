@@ -1,14 +1,23 @@
 package com.snorklingturtle.photographer.util;
 
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.util.Vector;
 
+import java.util.Map;
+
 public class RaycastUtil {
 
     private static final double STEP   = 0.05;  // metres per step — smaller = more accurate, slower
+
+    public static final Map<Material, Double> TRANSPARENT_MATERIALS = Map.of(
+            Material.WATER, 0.85,
+            Material.GLASS, 0.25,
+            Material.GLASS_PANE, 0.25
+    );
 
     private RaycastUtil() {}
 
@@ -18,10 +27,16 @@ public class RaycastUtil {
         Location cur = eye.clone();
 
         Block prev = null;
+        Material passedThroguhMaterial = null;
 
         for (double d = 0; d < length; d += STEP) {
             cur.add(delta);
             Block block = cur.getBlock();
+
+            if (TRANSPARENT_MATERIALS.containsKey(block.getType()))
+            {
+                passedThroguhMaterial = block.getType();
+            }
 
             if (isSolid(block.getType())) {
                 BlockFace face = determineFace(prev, block);
@@ -33,14 +48,14 @@ public class RaycastUtil {
                     lightLevel = block.getRelative(face).getLightFromBlocks();
                 }
 
-                return new RayHit(block.getType(), face, d, lightLevel);
+                return new RayHit(block.getType(), face, d, lightLevel, passedThroguhMaterial);
             }
 
             prev = block;
         }
 
         // Ray escaped into the sky / void
-        return new RayHit(null, BlockFace.UP, length, 15);
+        return new RayHit(null, BlockFace.UP, length, 15, null);
     }
 
     // Figure out on which side the ray hit the block
@@ -66,7 +81,10 @@ public class RaycastUtil {
                 || mat == Material.VOID_AIR) return false;
 
         // Treat water and lava as solid so they show up
-        if (mat == Material.WATER || mat == Material.LAVA) return true;
+        if (mat == Material.LAVA) return true;
+        // if (mat == Material.WATER || mat == Material.LAVA) return true;
+
+        if (TRANSPARENT_MATERIALS.containsKey(mat)) return false;
 
         return mat.isOccluding() || mat.isSolid();
     }
@@ -77,14 +95,15 @@ public class RaycastUtil {
         public final Material material;
         public final BlockFace face;
         public final double distance;
-
         public final double lightLevel;
+        public final Material passedThroguhMaterial;
 
-        public RayHit(Material material, BlockFace face, double distance, double lightLevel) {
+        public RayHit(Material material, BlockFace face, double distance, double lightLevel, Material passedThroguhMaterial) {
             this.material = material;
             this.face     = face;
             this.distance = distance;
             this.lightLevel = lightLevel;
+            this.passedThroguhMaterial = passedThroguhMaterial;
         }
 
         public boolean isSky() {

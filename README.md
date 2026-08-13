@@ -69,7 +69,6 @@ world. Map IDs will no longer match those in the database, which might end up in
 ## Todo
 
 * [Idea] Make a tool that easily grabs colors of new blocks. E.g. look at block and do `/camera pick-color`.
-* [Fix] Keep track of map IDs and when players copy/destroy maps 
 * [Optimize] Check color mapping
 * [Idea] Better rendering of water. Trace through, but add blue tint.
 * [Idea] Framing
@@ -84,9 +83,9 @@ world. Map IDs will no longer match those in the database, which might end up in
 
 ## Done
 
-* Photos are distorted when looking up/down.
+* [Bug] Photos are distorted when looking up/down.
 * [Idea] Prettier sky
-
+* [Fix] Keep track of map IDs and when players copy/destroy maps
 
 ## Issues
 

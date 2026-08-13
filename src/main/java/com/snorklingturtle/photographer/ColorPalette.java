@@ -15,6 +15,7 @@ public class ColorPalette {
     private static Color c(int r, int g, int b) {
         return new Color(r, g, b);
     }
+
     private static Color c(int r, int g, int b, int a) {
         return new Color(r, g, b, a);
     }

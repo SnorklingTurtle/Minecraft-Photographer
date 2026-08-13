@@ -17,9 +17,7 @@ import org.bukkit.util.Vector;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import java.awt.Color;
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.*;
 
 
 @SuppressWarnings("deprecation")
@@ -147,6 +145,12 @@ public class CameraRenderer {
         } else {
             c = ColorMapping.getBaseColor(hit.material);
 
+            if (hit.passedThroguhMaterial != null)
+            {
+                Color tintColor = ColorMapping.getBaseColor(hit.passedThroguhMaterial);
+                double tintAlpha = RaycastUtil.TRANSPARENT_MATERIALS.get(hit.passedThroguhMaterial);
+                c = getTintedColor(c, tintColor, tintAlpha);
+            }
             if (Photographer.hasShading)
             {
                 c = shadedColor(c, hit.face);
@@ -157,6 +161,13 @@ public class CameraRenderer {
             }
         }
         return c;
+    }
+
+    private static Color getTintedColor(Color base, Color tint, double strength) {
+        int r = clamp((int)(base.getRed()   + (tint.getRed()   - base.getRed())   * strength));
+        int g = clamp((int)(base.getGreen() + (tint.getGreen() - base.getGreen()) * strength));
+        int b = clamp((int)(base.getBlue()  + (tint.getBlue()  - base.getBlue())  * strength));
+        return new Color(r, g, b);
     }
 
     private static TraceResult trace(World world, Player player, double distance, double fieldOfView, PostEffectCallback postEffectCallback) {
