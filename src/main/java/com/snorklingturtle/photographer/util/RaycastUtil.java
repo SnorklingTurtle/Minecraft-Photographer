@@ -1,15 +1,16 @@
 package com.snorklingturtle.photographer.util;
 
-import org.bukkit.Color;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import com.snorklingturtle.photographer.Photographer;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
 import java.util.Map;
 
 import static java.util.Map.entry;
+import static org.bukkit.Bukkit.getServer;
 
 public class RaycastUtil {
 
@@ -56,7 +57,7 @@ public class RaycastUtil {
 
     private RaycastUtil() {}
 
-    public static RayHit cast(Location eye, Vector direction, double length) {
+    public static RayHit cast_old(Location eye, Vector direction, double length) {
         Vector norm  = direction.clone().normalize();
         Vector delta = norm.clone().multiply(STEP);
         Location cur = eye.clone();
@@ -91,6 +92,102 @@ public class RaycastUtil {
 
         // Ray escaped into the sky / void
         return new RayHit(null, BlockFace.UP, length, 15, null);
+    }
+
+
+    public static RayHit cast_new1(Location eye, Vector direction, double length) {
+        World world = eye.getWorld();
+
+        Material passedThroguhMaterial = null;
+
+        // First pass: check for water along the ray (rayTraceBlocks can't track this itself)
+        // We do a separate water-only trace to see if water is hit before the solid block
+        RayTraceResult transparentCheck = world.rayTraceBlocks(
+                eye, direction, length,
+                FluidCollisionMode.ALWAYS,
+                false
+        );
+        RayTraceResult solidCheck = world.rayTraceBlocks(
+                eye, direction, length,
+                FluidCollisionMode.NEVER,
+                true
+        );
+
+        boolean hasHitTransparent = transparentCheck != null && transparentCheck.getHitBlock() != null;
+        boolean hasHitSolid = solidCheck != null && solidCheck.getHitBlock() != null;
+
+        if (hasHitTransparent || hasHitSolid) {
+            Material type = hasHitTransparent ? transparentCheck.getHitBlock().getType() : solidCheck.getHitBlock().getType();
+
+            if (TRANSPARENT_MATERIALS.containsKey(type)) {
+                passedThroguhMaterial = type;
+            }
+        }
+
+        if (solidCheck == null || solidCheck.getHitBlock() == null) {
+            return new RayHit(null, BlockFace.UP, length, 15, null);
+        }
+
+        Block hit = solidCheck.getHitBlock();
+        BlockFace face = solidCheck.getHitBlockFace() != null ? solidCheck.getHitBlockFace() : BlockFace.UP;
+        double dist = solidCheck.getHitPosition().distance(eye.toVector());
+
+        int lightLevel = hit.getRelative(face).getLightLevel();
+        if (lightLevel == 0) // Hack to avoid black pixels at block edges
+        {
+            lightLevel = hit.getRelative(face).getLightFromBlocks();
+        }
+
+        return new RayHit(hit.getType(), face, dist, lightLevel, passedThroguhMaterial);
+    }
+
+
+    public static RayHit cast(Location eye, Vector direction, double length) {
+        World world = eye.getWorld();
+
+        Material passedThroughMaterial = null;
+
+        RayTraceResult transparentCheck = world.rayTraceBlocks(
+                eye, direction, length,
+                FluidCollisionMode.ALWAYS,
+                false
+        );
+
+        // Determine the start point for the solid check
+        Location solidCheckOrigin = eye;
+        if (transparentCheck != null && transparentCheck.getHitBlock() != null) {
+            Material hitMat = transparentCheck.getHitBlock().getType();
+            if (TRANSPARENT_MATERIALS.containsKey(hitMat)) {
+                passedThroughMaterial = hitMat;
+                // Start the solid check just past the transparent block
+                solidCheckOrigin = transparentCheck.getHitBlock().getLocation().add(
+                        direction.clone().normalize().multiply(1.1) // step 1.1 blocks into/past it
+                );
+            }
+        }
+
+        double remainingLength = length - solidCheckOrigin.distance(eye);
+        RayTraceResult solidCheck = remainingLength > 0 ? world.rayTraceBlocks(
+                solidCheckOrigin, direction, remainingLength,
+                FluidCollisionMode.NEVER,
+                true
+        ) : null;
+
+        if (solidCheck == null || solidCheck.getHitBlock() == null) {
+            return new RayHit(null, BlockFace.UP, length, 15, null);
+        }
+
+        Block hit = solidCheck.getHitBlock();
+        BlockFace face = solidCheck.getHitBlockFace() != null ? solidCheck.getHitBlockFace() : BlockFace.UP;
+        double dist = solidCheck.getHitPosition().distance(eye.toVector());
+
+        int lightLevel = hit.getRelative(face).getLightLevel();
+        if (lightLevel == 0) // Hack to avoid black pixels at block edges
+        {
+            lightLevel = hit.getRelative(face).getLightFromBlocks();
+        }
+
+        return new RayHit(hit.getType(), face, dist, lightLevel, passedThroughMaterial);
     }
 
     // Figure out on which side the ray hit the block

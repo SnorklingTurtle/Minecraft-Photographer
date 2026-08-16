@@ -19,6 +19,8 @@ import java.awt.Color;
 import java.sql.Connection;
 import java.util.*;
 
+import static org.bukkit.Bukkit.getServer;
+
 
 @SuppressWarnings("deprecation")
 public class CameraRenderer {
@@ -150,6 +152,7 @@ public class CameraRenderer {
                 Color tintColor = ColorMapping.getBaseColor(hit.passedThroguhMaterial);
                 double tintAlpha = RaycastUtil.TRANSPARENT_MATERIALS.get(hit.passedThroguhMaterial);
                 c = getTintedColor(c, tintColor, tintAlpha);
+                getServer().getLogger().info("Hit: " + hit.material + " ---> Tint: " + hit.passedThroguhMaterial);
             }
             if (Photographer.hasShading)
             {
