@@ -152,7 +152,6 @@ public class CameraRenderer {
                 Color tintColor = ColorMapping.getBaseColor(hit.passedThroguhMaterial);
                 double tintAlpha = RaycastUtil.TRANSPARENT_MATERIALS.get(hit.passedThroguhMaterial);
                 c = getTintedColor(c, tintColor, tintAlpha);
-                getServer().getLogger().info("Hit: " + hit.material + " ---> Tint: " + hit.passedThroguhMaterial);
             }
             if (Photographer.hasShading)
             {
