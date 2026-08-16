@@ -4,6 +4,11 @@ import org.bukkit.Material;
 import com.snorklingturtle.photographer.util.FileUtil;
 
 import java.awt.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 public class ColorMapping {
@@ -21,11 +26,27 @@ public class ColorMapping {
         colorMapping = FileUtil.getConfig(plugin, colorMappingDestinationFile);
     }
 
+    public static String getColorString(String materialName)
+    {
+        return colorMapping.getProperty(materialName);
+    }
+
+    public static void setColor(String materialName, String color)
+    {
+        File folder = Photographer.getInstance().getDataFolder();
+        try(OutputStream outputStream = new FileOutputStream(Paths.get(folder + colorMappingDestinationFile).toFile())){
+            colorMapping.setProperty(materialName, color);
+            colorMapping.store(outputStream, null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     // Used when rendering the photo for the first time
     public static Color getBaseColor(Material material) {
         if (material == null) return FALLBACK_COLOR;
 
-        String colorString = colorMapping.getProperty(material.name());
+        String colorString = getColorString(material.name());
         if (colorString == null) return FALLBACK_COLOR;
 
         return getColorFromString(colorString);

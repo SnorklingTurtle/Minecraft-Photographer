@@ -1,5 +1,7 @@
 package com.snorklingturtle.photographer.commands;
 
+import com.snorklingturtle.photographer.CameraConfig;
+import com.snorklingturtle.photographer.ColorMapping;
 import com.snorklingturtle.photographer.Photographer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -74,7 +76,43 @@ public class CameraCommand implements CommandExecutor {
             return true;
         }
 
+        if (args.length == 5 && args[0].equalsIgnoreCase("setBlockColor")) {
+            String colorR = args[2];
+            if (parseIntOrNull(args[2]) == null)
+            {
+                player.sendMessage(String.format("§cCould not parse '%s' as a number between 0 and 255.", colorR));
+                return true;
+            }
+            String colorG = args[3];
+            if (parseIntOrNull(args[3]) == null)
+            {
+                player.sendMessage(String.format("§cCould not parse '%s' as a number between 0 and 255.", colorG));
+                return true;
+            }
+            String colorB = args[4];
+            if (parseIntOrNull(args[4]) == null)
+            {
+                player.sendMessage(String.format("§cCould not parse '%s' as a number between 0 and 255.", colorB));
+                return true;
+            }
+
+            String materialName = args[1].toUpperCase();
+
+            ColorMapping.setColor(materialName, String.format("%s,%s,%s", colorR, colorG, colorB));
+
+            player.sendMessage("§6Color mapping updated.");
+            return true;
+        }
+
         player.sendMessage("§cUnknown subcommand. Use §e/camera help§c.");
         return true;
+    }
+
+    private Integer parseIntOrNull(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }

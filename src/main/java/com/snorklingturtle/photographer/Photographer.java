@@ -23,6 +23,8 @@ import java.util.zip.DataFormatException;
 
 public class Photographer extends JavaPlugin {
 
+    private static Photographer instance;
+
     // Key used to tag the camera item in PersistentDataContainer
     public static NamespacedKey cameraItemKey;
     public static NamespacedKey recipeItemKey;
@@ -51,6 +53,8 @@ public class Photographer extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        instance = this;
+
         cameraItemKey = new NamespacedKey(this, "camera_item");
         recipeItemKey = new NamespacedKey(this, "camera_recipe");
 
@@ -154,5 +158,10 @@ public class Photographer extends JavaPlugin {
     @Override @NonNull
     public FileConfiguration getConfig() {
         return CameraConfig.getConfig(this);
+    }
+
+
+    public static Photographer getInstance() {
+        return instance;
     }
 }
