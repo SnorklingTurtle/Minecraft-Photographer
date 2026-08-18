@@ -8,6 +8,7 @@ import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
 import java.util.Map;
+import java.util.Set;
 
 import static java.util.Map.entry;
 import static org.bukkit.Bukkit.getServer;
@@ -57,6 +58,15 @@ public class RaycastUtil {
 
     private RaycastUtil() {}
 
+    private static final Set<Material> PASSABLE_SOLIDS = Set.of(
+            Material.SNOW,
+            Material.LAVA
+    );
+
+    private static final Set<Material> LIGHT_SOURCES = Set.of(
+            Material.LAVA
+    );
+
     public static RayHit cast(Location eye, Vector direction, double length) {
         World world = eye.getWorld();
 
@@ -65,7 +75,7 @@ public class RaycastUtil {
         RayTraceResult transparentCheck = world.rayTraceBlocks(
                 eye, direction, length,
                 FluidCollisionMode.ALWAYS,
-                false
+                true
         );
 
         // Determine the start point for the solid check
@@ -74,10 +84,13 @@ public class RaycastUtil {
             Material hitMat = transparentCheck.getHitBlock().getType();
             if (TRANSPARENT_MATERIALS.containsKey(hitMat)) {
                 passedThroughMaterial = hitMat;
-                // Start the solid check just past the transparent block
-                solidCheckOrigin = transparentCheck.getHitBlock().getLocation().add(
-                        direction.clone().normalize().multiply(1.1) // step 1.1 blocks into/past it
-                );
+                if (!transparentCheck.getHitBlock().isLiquid())
+                {
+                    // Start the solid check just past the transparent block
+                    solidCheckOrigin = transparentCheck.getHitBlock().getLocation().add(
+                            direction.clone().normalize().multiply(1.1) // step 1.1 blocks into/past it
+                    );
+                }
             }
         }
 
@@ -88,55 +101,61 @@ public class RaycastUtil {
                 true
         ) : null;
 
+        // Check for passable blocks we explicitly want to render
+        RayTraceResult passableCheck = length > 0 ? world.rayTraceBlocks(
+                solidCheckOrigin, direction, length,
+                FluidCollisionMode.ALWAYS,
+                false // include passable blocks
+        ) : null;
+
+        // Only use it if it hit something we actually want
+        if (passableCheck != null && passableCheck.getHitBlock() != null
+                && PASSABLE_SOLIDS.contains(passableCheck.getHitBlock().getType())) {
+            double passableDist = passableCheck.getHitPosition().distance(eye.toVector());
+            double solidDist = solidCheck != null && solidCheck.getHitBlock() != null
+                    ? solidCheck.getHitPosition().distance(eye.toVector())
+                    : Double.MAX_VALUE;
+            if (passableDist < solidDist) {
+                solidCheck = passableCheck;
+            }
+        }
+
         if (solidCheck == null || solidCheck.getHitBlock() == null) {
-            return new RayHit(null, BlockFace.UP, length, 15, null);
+            return new RayHit(null, BlockFace.UP, length, 15, passedThroughMaterial);
         }
 
         Block hit = solidCheck.getHitBlock();
-        BlockFace face = solidCheck.getHitBlockFace() != null ? solidCheck.getHitBlockFace() : BlockFace.UP;
+        BlockFace face = solidCheck.getHitBlockFace() != null ? solidCheck.getHitBlockFace() : getExactFaceFromRay(direction);
         double dist = solidCheck.getHitPosition().distance(eye.toVector());
 
         int lightLevel = hit.getRelative(face).getLightLevel();
         if (lightLevel == 0) // Hack to avoid black pixels at block edges
         {
-            lightLevel = hit.getRelative(face).getLightFromBlocks();
+            if (LIGHT_SOURCES.contains(hit.getType()))
+            {
+                lightLevel = 15;
+            }
+            else {
+                lightLevel = hit.getLightFromSky();
+            }
         }
 
         return new RayHit(hit.getType(), face, dist, lightLevel, passedThroughMaterial);
     }
 
-    // Figure out on which side the ray hit the block
-    private static BlockFace determineFace(Block prev, Block hit) {
-        if (prev == null) return BlockFace.NORTH;
+    private static BlockFace getExactFaceFromRay(Vector rayDirection) {
+        double dx = Math.abs(rayDirection.getX());
+        double dy = Math.abs(rayDirection.getY());
+        double dz = Math.abs(rayDirection.getZ());
 
-        int dx = hit.getX() - prev.getX();
-        int dy = hit.getY() - prev.getY();
-        int dz = hit.getZ() - prev.getZ();
-
-        if (dy > 0) return BlockFace.DOWN; // ray came from below → hit bottom face
-        if (dy < 0) return BlockFace.UP;    // ray came from above → hit top face
-        if (dx > 0) return BlockFace.WEST;
-        if (dx < 0) return BlockFace.EAST;
-        if (dz > 0) return BlockFace.NORTH;
-        if (dz < 0) return BlockFace.SOUTH;
-
-        return BlockFace.UP;
+        if (dy > dx && dy > dz) {
+            return rayDirection.getY() > 0 ? BlockFace.DOWN : BlockFace.UP;
+        }
+        if (dx > dz) {
+            return rayDirection.getX() > 0 ? BlockFace.WEST : BlockFace.EAST;
+        }
+        return rayDirection.getZ() > 0 ? BlockFace.NORTH : BlockFace.SOUTH;
     }
-
-    private static boolean isSolid(Material mat) {
-        if (mat == null || mat == Material.AIR || mat == Material.CAVE_AIR
-                || mat == Material.VOID_AIR) return false;
-
-        // Treat water and lava as solid so they show up
-        if (mat == Material.LAVA) return true;
-        // if (mat == Material.WATER || mat == Material.LAVA) return true;
-
-        if (TRANSPARENT_MATERIALS.containsKey(mat)) return false;
-
-        return mat.isOccluding() || mat.isSolid();
-    }
-
-    // ---------------------------------------------------------------------------
 
     public static class RayHit {
         public final Material material;
