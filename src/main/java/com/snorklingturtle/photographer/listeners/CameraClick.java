@@ -1,6 +1,6 @@
 package com.snorklingturtle.photographer.listeners;
 
-import com.snorklingturtle.photographer.CameraItem;
+import com.snorklingturtle.photographer.util.CameraUtil;
 import com.snorklingturtle.photographer.Photographer;
 import com.snorklingturtle.photographer.CameraRenderer;
 import com.snorklingturtle.photographer.util.InventoryUtil;
@@ -32,7 +32,7 @@ public class CameraClick implements Listener {
         Player player = event.getPlayer();
 
         ItemStack held = player.getInventory().getItemInMainHand();
-        if (!CameraItem.isCamera(held, Photographer.cameraItemKey)) return;
+        if (!CameraUtil.isCamera(held, Photographer.cameraItemKey)) return;
 
         event.setCancelled(true);
 

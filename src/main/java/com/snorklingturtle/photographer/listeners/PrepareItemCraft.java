@@ -1,6 +1,6 @@
 package com.snorklingturtle.photographer.listeners;
 
-import com.snorklingturtle.photographer.CameraItem;
+import com.snorklingturtle.photographer.util.CameraUtil;
 import com.snorklingturtle.photographer.Photographer;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
@@ -23,7 +23,7 @@ public class PrepareItemCraft implements Listener {
         Recipe recipe = event.getRecipe();
         if (recipe == null) return;
 
-        if (CameraItem.isCamera(recipe.getResult(), Photographer.cameraItemKey)) {
+        if (CameraUtil.isCamera(recipe.getResult(), Photographer.cameraItemKey)) {
             for (HumanEntity he : event.getViewers()) {
                 if (he instanceof Player) {
                     if (!he.hasPermission("camera.craft")) {

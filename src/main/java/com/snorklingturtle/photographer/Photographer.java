@@ -15,6 +15,7 @@ import org.bukkit.map.MapView;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import javax.naming.Name;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class Photographer extends JavaPlugin {
 
     public static final int MAP_SIZE = 128;
 
-    public static double fieldOfView = 70;
+    public static int fieldOfView = 70;
     public static boolean hasAntiAliasing = true;
     public static boolean hasShading = true;
     public static boolean hasShadows = true;
@@ -43,11 +44,18 @@ public class Photographer extends JavaPlugin {
     public static final String CONFIG_KEY_SKIN_URL = "settings.camera.skinUrl";
     public static final String CONFIG_KEY_RECIPE_INGREDIENTS = "settings.camera.recipe.ingredients";
     public static final String CONFIG_KEY_CAPTURE_COOLDOWN = "settings.camera.cooldown";
+
     private static final String CONFIG_KEY_DITHERING = "settings.camera.properties.dithering";
     private static final String CONFIG_KEY_ANTIALIASING = "settings.camera.properties.antialiasing";
     private static final String CONFIG_KEY_SHADOWS = "settings.camera.properties.shadows";
     private static final String CONFIG_KEY_SHADING = "settings.camera.properties.shading";
     private static final String CONFIG_KEY_FIELD_OF_VIEW = "settings.camera.properties.fieldOfView";
+
+    public static NamespacedKey cameraSettingAntialiasingKey;
+    public static NamespacedKey cameraSettingFieldOfViewKey;
+    public static NamespacedKey cameraSettingShadingKey;
+    public static NamespacedKey cameraSettingShadowsKey;
+    public static NamespacedKey cameraSettingDitheringKey;
 
     public static List<Integer> cachedMapIDs = new ArrayList<>();
 
@@ -57,6 +65,12 @@ public class Photographer extends JavaPlugin {
 
         cameraItemKey = new NamespacedKey(this, "camera_item");
         recipeItemKey = new NamespacedKey(this, "camera_recipe");
+
+        cameraSettingAntialiasingKey = new NamespacedKey(this, "camera_setting_antialiasing_key");
+        cameraSettingFieldOfViewKey = new NamespacedKey(this, "camera_setting_fieldofview_key");
+        cameraSettingShadingKey = new NamespacedKey(this, "camera_setting_shading_key");
+        cameraSettingShadowsKey = new NamespacedKey(this, "camera_setting_shadows_key");
+        cameraSettingDitheringKey = new NamespacedKey(this, "camera_setting_dithering_key");
 
         // Register listeners
         getServer().getPluginManager().registerEvents(new PlayerJoin(this), this);
@@ -84,7 +98,7 @@ public class Photographer extends JavaPlugin {
         ColorMapping.load(this);
 
         // Default camera properties
-        fieldOfView = Math.toRadians(config.getInt(CONFIG_KEY_FIELD_OF_VIEW));
+        fieldOfView = config.getInt(CONFIG_KEY_FIELD_OF_VIEW);
         hasAntiAliasing = config.getBoolean(CONFIG_KEY_ANTIALIASING);
         hasShading = config.getBoolean(CONFIG_KEY_SHADING);
         hasShadows = config.getBoolean(CONFIG_KEY_SHADOWS);

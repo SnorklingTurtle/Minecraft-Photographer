@@ -1,5 +1,6 @@
 package com.snorklingturtle.photographer;
 
+import com.snorklingturtle.photographer.util.CameraUtil;
 import com.snorklingturtle.photographer.util.RaycastUtil;
 import com.snorklingturtle.photographer.util.RaycastUtil.RayHit;
 import org.bukkit.*;
@@ -18,8 +19,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import java.awt.Color;
 import java.sql.Connection;
 import java.util.*;
-
-import static org.bukkit.Bukkit.getServer;
 
 
 @SuppressWarnings("deprecation")
@@ -46,25 +45,26 @@ public class CameraRenderer {
     }
 
     public interface PostEffectCallback {
-        Color getColor(RaycastUtil.RayHit hit, org.bukkit.util.Vector ray, String worldName, long worldTime, int positionY);
+        Color getColor(Player player, RaycastUtil.RayHit hit, org.bukkit.util.Vector ray, String worldName, long worldTime, int positionY);
     }
 
     public static void capture(Player player, Photographer plugin) {
         double renderDistance = plugin.getConfig().getInt(Photographer.CONFIG_KEY_RENDER_DISTANCE);
 
         World world = player.getWorld();
+        ItemStack heldItem = player.getInventory().getItemInMainHand();
 
         TraceResult traceResult = trace(
                 world,
                 player,
                 renderDistance,
-                Photographer.fieldOfView,
+                Math.toRadians(CameraUtil.getFieldOfView(heldItem)),
                 CameraRenderer::PostProcessing
         );
 
         // Optional dithering
         byte[] pixels;
-        if (Photographer.hasDithering) {
+        if (CameraUtil.hasDithering(heldItem)) {
             // Floyd–Steinberg dithering → final byte[] pixel buffer
             pixels = ditherToMapPalette(traceResult.RawR, traceResult.RawG, traceResult.RawB);
         } else {
@@ -135,7 +135,9 @@ public class CameraRenderer {
         });
     }
 
-    private static Color PostProcessing(RaycastUtil.RayHit hit, org.bukkit.util.Vector ray, String worldName, long worldTime, int positionY) {
+    private static Color PostProcessing(Player player, RaycastUtil.RayHit hit, org.bukkit.util.Vector ray, String worldName, long worldTime, int positionY) {
+        ItemStack heldItem = player.getInventory().getItemInMainHand();
+
         Color c;
         if (hit.isSky()) {
             c = getSkyColor(worldName, positionY, worldTime);
@@ -153,11 +155,11 @@ public class CameraRenderer {
                 double tintAlpha = RaycastUtil.TRANSPARENT_MATERIALS.get(hit.passedThroguhMaterial);
                 c = getTintedColor(c, tintColor, tintAlpha);
             }
-            if (Photographer.hasShading)
+            if (CameraUtil.hasShading(heldItem))
             {
                 c = shadedColor(c, hit.face);
             }
-            if (Photographer.hasShadows)
+            if (CameraUtil.hasShading(heldItem))
             {
                 c = shadowColor(c, hit.lightLevel);
             }
@@ -190,7 +192,10 @@ public class CameraRenderer {
         float[][] rawG = new float[Photographer.MAP_SIZE][Photographer.MAP_SIZE];
         float[][] rawB = new float[Photographer.MAP_SIZE][Photographer.MAP_SIZE];
 
-        if (Photographer.hasAntiAliasing) {
+        ItemStack heldItem = player.getInventory().getItemInMainHand();
+        boolean hasAntiAliasing = CameraUtil.hasAntialiasing(heldItem);
+
+        if (hasAntiAliasing) {
             final double SS_STEP = 1.0 / SUPER_SAMPLING;
 
             for (int py = 0; py < Photographer.MAP_SIZE; py++) {
@@ -217,7 +222,7 @@ public class CameraRenderer {
                             RayHit hit = RaycastUtil.cast(eye, ray, distance);
 
                             // Do sun, moon, shading and shadows
-                            Color c = postEffectCallback.getColor(hit, ray, worldName, worldTime, py);
+                            Color c = postEffectCallback.getColor(player, hit, ray, worldName, worldTime, py);
 
                             accR += c.getRed();
                             accG += c.getGreen();
@@ -248,7 +253,7 @@ public class CameraRenderer {
                     RayHit hit = RaycastUtil.cast(eye, ray, distance);
 
                     // Do sun, moon, shading and shadows
-                    Color c = postEffectCallback.getColor(hit, ray, worldName, worldTime, py);
+                    Color c = postEffectCallback.getColor(player, hit, ray, worldName, worldTime, py);
 
                     rawR[px][py] = c.getRed();
                     rawG[px][py] = c.getGreen();

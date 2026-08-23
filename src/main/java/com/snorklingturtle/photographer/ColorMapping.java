@@ -31,7 +31,7 @@ public class ColorMapping {
         return colorMapping.getProperty(materialName);
     }
 
-    public static void setColor(String materialName, String color)
+    public static void saveColor(String materialName, String color)
     {
         File folder = Photographer.getInstance().getDataFolder();
         try(OutputStream outputStream = new FileOutputStream(Paths.get(folder + colorMappingDestinationFile).toFile())){
