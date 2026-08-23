@@ -184,15 +184,14 @@ public class Storage {
         return false;
     }
 
-    public static ResultSet getById(Photographer plugin, Connection conn, Integer map_id, long world_seed) {
-        String query = String.format("SELECT map_id,data,tag FROM %s WHERE map_id=? AND seed=? LIMIT 1;", Storage.tableName);
+    public static ResultSet getById(Photographer plugin, Connection conn, Integer map_id) {
+        String query = String.format("SELECT map_id,data,tag FROM %s WHERE map_id=? LIMIT 1;", Storage.tableName);
         ResultSet rs = null;
 
         try
         {
             PreparedStatement statement = conn.prepareStatement(query);
             statement.setInt(1, map_id);
-            statement.setLong(2, world_seed);
             rs = statement.executeQuery();
         }
         catch (SQLException e)

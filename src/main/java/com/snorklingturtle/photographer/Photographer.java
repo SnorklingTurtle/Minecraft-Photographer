@@ -29,6 +29,8 @@ public class Photographer extends JavaPlugin {
     // Key used to tag the camera item in PersistentDataContainer
     public static NamespacedKey cameraItemKey;
     public static NamespacedKey recipeItemKey;
+    public static NamespacedKey photoItemKey;
+    public static NamespacedKey photoFrameColorItemKey;
 
     public static final int MAP_SIZE = 128;
 
@@ -65,6 +67,8 @@ public class Photographer extends JavaPlugin {
 
         cameraItemKey = new NamespacedKey(this, "camera_item");
         recipeItemKey = new NamespacedKey(this, "camera_recipe");
+        recipeItemKey = new NamespacedKey(this, "photo_item");
+        photoFrameColorItemKey = new NamespacedKey(this, "photo_frame_color");
 
         cameraSettingAntialiasingKey = new NamespacedKey(this, "camera_setting_antialiasing_key");
         cameraSettingFieldOfViewKey = new NamespacedKey(this, "camera_setting_fieldofview_key");
@@ -78,6 +82,7 @@ public class Photographer extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new CameraClick(this), this);
         getServer().getPluginManager().registerEvents(new PhotoCopy(this), this);
         getServer().getPluginManager().registerEvents(new PhotoDestroy(this), this);
+        getServer().getPluginManager().registerEvents(new PhotoFrameClick(this), this);
 
         // Commands
         PluginCommand cameraCommand = getCommand("camera");
@@ -131,7 +136,7 @@ public class Photographer extends JavaPlugin {
                 if (mapView == null)
                     continue;
 
-                mapView.setTrackingPosition(false);
+//                mapView.setTrackingPosition(false);
                 for (MapRenderer renderer : mapView.getRenderers())
                     mapView.removeRenderer(renderer);
 

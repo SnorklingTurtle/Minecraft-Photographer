@@ -270,6 +270,7 @@ public class CameraRenderer {
         return traceResult;
     }
 
+
     private static String getNearestStructure(Player player) {
         String[] structuresOfInterest = createStructuresOfInterest();
 

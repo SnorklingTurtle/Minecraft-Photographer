@@ -15,8 +15,6 @@ import static org.bukkit.Bukkit.getServer;
 
 public class RaycastUtil {
 
-    private static final double STEP = 0.05;  // metres per step — smaller = more accurate, slower
-
     public static final Map<Material, Double> TRANSPARENT_MATERIALS = Map.ofEntries(
             entry(Material.WATER, 0.85d),
             entry(Material.TINTED_GLASS, 0.85),
