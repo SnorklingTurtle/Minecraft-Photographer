@@ -39,8 +39,8 @@ Photos are stored in a SQLite database at `plugins/Minecraft-Photographer/photos
 
 ## Permissions
 
-To allow players to craft and use the camera you must set permissions for at least `cameras.craft` and
-`cameras.use` and optionally `cameras.command`. You can either set the permissions in
+To allow players to craft and use the camera you must set permissions for at least `camera.craft` and
+`camera.use` and optionally `camera.command`. You can either set the permissions in
 permissions.yml or through LuckPerms. Other permissions plugins might work as well, but haven't been tested.
 
 Here's an example for permissions.yml:
@@ -53,10 +53,13 @@ Here's an example for permissions.yml:
     description: Allows using the camera item.
     default: true
   camera.command:
-    description: Allows camera commands /camera
-    default: op
-  camera.usepaper:
-    description: Require paper when taking photos
+    description: Allows camera commands through /camera
+    default: true
+  camera.consumepaper:
+    description: Consume paper when taking photos
+    default: true
+  camera.consumedye:
+    description: Consume dye when coloring an item frame
     default: true
 ```
 

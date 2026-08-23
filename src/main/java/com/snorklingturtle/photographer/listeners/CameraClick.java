@@ -41,8 +41,8 @@ public class CameraClick implements Listener {
         // Only care about right clicks (air or block)
         if (action != Action.RIGHT_CLICK_AIR) return;
 
-        boolean usePaper = player.hasPermission("camera.usepaper");
-        if (usePaper && !player.getInventory().contains(Material.PAPER)) {
+        boolean consumePaper = player.hasPermission("camera.consumepaper");
+        if (consumePaper && !InventoryUtil.hasItem(player, Material.PAPER)) {
             player.sendMessage("§cYou must have paper in your inventory.");
             return;
         }
@@ -65,9 +65,9 @@ public class CameraClick implements Listener {
             return;
         }
 
-        if (usePaper) {
+        if (consumePaper) {
             // remove 1 paper from the player's inventory
-            InventoryUtil.removePaperFromInventory(player, 1);
+            InventoryUtil.removeItemFromInventory(player, Material.PAPER,1);
         }
 
         player.playSound(player.getLocation(), Sound.BLOCK_PISTON_EXTEND, 0.5F, 2.0F);

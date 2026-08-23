@@ -6,6 +6,7 @@ import com.snorklingturtle.photographer.Photographer;
 
 import com.snorklingturtle.photographer.Storage;
 import com.snorklingturtle.photographer.util.ByteArrayCompression;
+import com.snorklingturtle.photographer.util.InventoryUtil;
 import com.snorklingturtle.photographer.util.PhotoUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -61,14 +62,12 @@ public class PhotoFrameClick implements Listener {
             entry(Material.PINK_DYE, new Color(243, 139, 170))
     );
 
-//    private byte[] mapDataSerialized;
-
     @EventHandler
     public void frameClicked(PlayerInteractEntityEvent event) {
         Player player = event.getPlayer();
 
         // Is player sneaking
-        if (!player.isSneaking()) return;
+        //if (!player.isSneaking()) return;
 
         // Is the player holding a valid dye
         ItemStack heldItem = player.getInventory().getItemInMainHand();
@@ -88,20 +87,27 @@ public class PhotoFrameClick implements Listener {
 //        for (MapRenderer renderer : mapView.getRenderers())
 //            mapView.removeRenderer(renderer);
 
-        // Get photo from database
-        Connection dbConnection = Storage.connect(plugin);
-        ResultSet mapsResultSet = Storage.getById(plugin, dbConnection, mapId);
+        Color dyeColor = DYES.get(heldItem.getType());
+        if (dyeColor == null) {
+            player.sendMessage(String.format("Couldn't find dye '%s'", heldItem.getType().name()));
+            return;
+        }
+
         try {
-            if (mapsResultSet.next()) {
-                byte[] mapDataSerialized = mapsResultSet.getBytes("data");
+            // Get photo from database
+            Connection dbConnection = Storage.connect(plugin);
+            ResultSet mapsResultSet = Storage.getById(plugin, dbConnection, mapId);
 
-                // Re-render with frame
-                mapView.addRenderer(new MapRenderer() {
-                    @Override
-                    public void render(@NonNull MapView mapViewNew, @NonNull MapCanvas mapCanvas, @NonNull Player player) {
-                        //if (!Photographer.cachedMapIDs.contains(mapViewNew.getId())) {
-                        //Photographer.cachedMapIDs.add(mapViewNew.getId());
+            if (!mapsResultSet.next()) return;
+            byte[] mapDataSerialized = mapsResultSet.getBytes("data");
 
+            // Re-render with frame
+            mapView.addRenderer(new MapRenderer() {
+                @Override
+                public void render(@NonNull MapView mapViewNew, @NonNull MapCanvas mapCanvas, @NonNull Player player) {
+                    //if (!Photographer.cachedMapIDs.contains(mapViewNew.getId())) {
+                    //Photographer.cachedMapIDs.add(mapViewNew.getId());
+                    try {
                         byte[] pixels;
                         try {
                             pixels = ByteArrayCompression.decompress(mapDataSerialized);
@@ -122,25 +128,32 @@ public class PhotoFrameClick implements Listener {
 
                         // Render frame
                         boolean isBlackDye = heldItem.getType() == Material.BLACK_DYE;
-                        Color colorOuter = isBlackDye ? DYES.get(heldItem.getType()) : DYES.get(heldItem.getType()).darker();
-                        Color colorInner = isBlackDye ? DYES.get(heldItem.getType()).brighter() : DYES.get(heldItem.getType());
+                        Color colorOuter = isBlackDye ? dyeColor : dyeColor.darker();
+                        Color colorInner = isBlackDye ? dyeColor.brighter() : dyeColor;
                         drawFrame(mapCanvas,
                                 colorOuter,
                                 colorInner
                         );
-                        //}
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                });
-            }
+                    //}
+                }
+            });
+
+            Storage.disconnect(plugin, dbConnection);
         }
-        catch (SQLException e) {
+        catch (Exception e) {
             e.printStackTrace();
         }
-        Storage.disconnect(plugin, dbConnection);
-
+        
         try {
             Color particleColor = DYES.get(heldItem.getType());
-            Particle.DustOptions dustOptions = new Particle.DustOptions(org.bukkit.Color.fromRGB(particleColor.getRed(), particleColor.getGreen(), particleColor.getBlue()), 1.0F);
+            Particle.DustOptions dustOptions = new Particle.DustOptions(
+                org.bukkit.Color.fromRGB(particleColor.getRed(), particleColor.getGreen(), particleColor.getBlue()),
+                1.0F
+            );
 
             int amount = 25;
             for (int i = 0; i < amount; i++)
@@ -162,6 +175,8 @@ public class PhotoFrameClick implements Listener {
         }
 
         player.playSound(frame.getLocation(), Sound.ITEM_DYE_USE, 1.0F, 1.0F);
+
+        InventoryUtil.removeItemFromInventory(player, heldItem.getType(), 1);
 
         // Cancel default action
         event.setCancelled(true);

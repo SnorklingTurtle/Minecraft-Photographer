@@ -22,6 +22,9 @@ permissions:
   camera.command:
     description: Allows camera commands through /camera
     default: true
-  camera.usepaper:
-    description: Require paper when taking photos
+  camera.consumepaper:
+    description: Consume paper when taking photos
+    default: true
+  camera.consumedye:
+    description: Consume dye when coloring an item frame
     default: true
