@@ -43,6 +43,7 @@ public class Storage {
                 + " map_id          INTEGER         NOT NULL,\n"
                 + " seed            INTEGER         NOT NULL,\n"
                 + " counter         INTEGER         DEFAULT 1,\n"
+                + " frame_color     INTEGER         DEFAULT 0,\n"
                 + " data            BLOB            NOT NULL,\n"
                 + " photographer    TEXT,\n"
                 + " tag             TEXT,\n"
@@ -83,8 +84,6 @@ public class Storage {
         }
     }
 
-
-
     public static void store(Photographer plugin, Connection conn, int id, long seed, byte[] data, UUID photographer, int counter) {
         store(plugin, conn, id, seed, data, photographer, counter, null, null);
     }
@@ -114,7 +113,7 @@ public class Storage {
     }
 
     public static ResultSet getAll(Photographer plugin, Connection conn) {
-        String query = String.format("SELECT map_id,data FROM %s;", Storage.tableName);
+        String query = String.format("SELECT map_id,data,frame_color FROM %s;", Storage.tableName);
         ResultSet rs = null;
 
         try
@@ -146,6 +145,22 @@ public class Storage {
         }
 
         return rs;
+    }
+
+    public static void updateFrameColor(Photographer plugin, Connection conn, Integer map_id, int color) {
+        String query = String.format("UPDATE %s SET frame_color=(?) WHERE map_id=?;", Storage.tableName);
+
+        try
+        {
+            PreparedStatement statement = conn.prepareStatement(query);
+            statement.setInt(1, color);
+            statement.setInt(2, map_id);
+            statement.executeUpdate();
+        }
+        catch (SQLException e)
+        {
+            plugin.getLogger().info(e.getMessage());
+        }
     }
 
     public static void updateCounter(Photographer plugin, Connection conn, Integer map_id, long world_seed, int amount) {

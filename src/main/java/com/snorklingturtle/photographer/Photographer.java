@@ -4,6 +4,7 @@ import com.snorklingturtle.photographer.commands.CameraCommand;
 import com.snorklingturtle.photographer.commands.CameraCommandTabCompleter;
 import com.snorklingturtle.photographer.listeners.*;
 import com.snorklingturtle.photographer.util.ByteArrayCompression;
+import com.snorklingturtle.photographer.util.RenderUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.PluginCommand;
@@ -16,6 +17,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import javax.naming.Name;
+import java.awt.*;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -29,8 +31,7 @@ public class Photographer extends JavaPlugin {
     // Key used to tag the camera item in PersistentDataContainer
     public static NamespacedKey cameraItemKey;
     public static NamespacedKey recipeItemKey;
-    public static NamespacedKey photoItemKey;
-    public static NamespacedKey photoFrameColorItemKey;
+    public static NamespacedKey itemFrameColorKey;
 
     public static final int MAP_SIZE = 128;
 
@@ -67,8 +68,7 @@ public class Photographer extends JavaPlugin {
 
         cameraItemKey = new NamespacedKey(this, "camera_item");
         recipeItemKey = new NamespacedKey(this, "camera_recipe");
-        recipeItemKey = new NamespacedKey(this, "photo_item");
-        photoFrameColorItemKey = new NamespacedKey(this, "photo_frame_color");
+        itemFrameColorKey = new NamespacedKey(this, "item_frame_color");
 
         cameraSettingAntialiasingKey = new NamespacedKey(this, "camera_setting_antialiasing_key");
         cameraSettingFieldOfViewKey = new NamespacedKey(this, "camera_setting_fieldofview_key");
@@ -130,42 +130,18 @@ public class Photographer extends JavaPlugin {
             while (mapsResultSet.next())
             {
                 int mapId = mapsResultSet.getInt("map_id");
+                int frameColorBytes = mapsResultSet.getInt("frame_color");
+                Color frameColor = frameColorBytes == 0 ? null : RenderUtil.toColor(frameColorBytes);
                 byte[] mapDataSerialized = mapsResultSet.getBytes("data");
 
                 MapView mapView = Bukkit.getMap(mapId);
                 if (mapView == null)
                     continue;
 
-//                mapView.setTrackingPosition(false);
                 for (MapRenderer renderer : mapView.getRenderers())
                     mapView.removeRenderer(renderer);
 
-                mapView.addRenderer(new MapRenderer() {
-                    @Override
-                    public void render(@NonNull MapView mapViewNew, @NonNull MapCanvas mapCanvas, @NonNull Player player) {
-                        if (!cachedMapIDs.contains(mapViewNew.getId())) {
-                            cachedMapIDs.add(mapViewNew.getId());
-
-                            byte[] pixels;
-                            try {
-                                pixels = ByteArrayCompression.decompress(mapDataSerialized);
-                            } catch (DataFormatException ex) {
-                                throw new RuntimeException(ex);
-                            }
-
-                            mapView.setLocked(true);
-                            mapView.setTrackingPosition(false);
-                            mapView.setUnlimitedTracking(false);
-
-                            for (int py = 0; py < MAP_SIZE; py++) {
-                                for (int px = 0; px < MAP_SIZE; px++) {
-                                    byte colorByte = pixels[py * MAP_SIZE + px];
-                                    mapCanvas.setPixelColor(px, py, ColorPalette.getColor(colorByte));
-                                }
-                            }
-                        }
-                    }
-                });
+                mapView.addRenderer(RenderUtil.photoRender(mapDataSerialized, frameColor, true));
             }
         }
         catch (Exception e)

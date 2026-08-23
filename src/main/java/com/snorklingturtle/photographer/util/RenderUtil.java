@@ -19,7 +19,6 @@ import static java.util.Map.entry;
 
 public class RenderUtil {
 
-
     // TODO: Take color for mapping instead
     public static final Map<Material, Color> DYES = Map.ofEntries(
             entry(Material.WHITE_DYE, new Color(249, 255, 254)),
@@ -40,17 +39,18 @@ public class RenderUtil {
             entry(Material.PINK_DYE, new Color(243, 139, 170))
     );
 
-    public static MapRenderer photoRender(byte[] mapDataSerialized, ItemStack heldItem) {
-        Color itemFrameColor = DYES.get(heldItem.getType());
-        if (itemFrameColor == null) return null;
+    public static MapRenderer photoRender(byte[] mapDataSerialized) {
+        return photoRender(mapDataSerialized, null, true);
+    }
 
-        // Re-render with frame
+    public static MapRenderer photoRender(byte[] mapDataSerialized, Color itemFrameColor, boolean isInitial) {
         return new MapRenderer() {
-
             @Override
             public void render(@NonNull MapView mapViewNew, @NonNull MapCanvas mapCanvas, @NonNull Player player) {
-                //if (!Photographer.cachedMapIDs.contains(mapViewNew.getId())) {
-                //Photographer.cachedMapIDs.add(mapViewNew.getId());
+                if (isInitial && !Photographer.cachedMapIDs.contains(mapViewNew.getId())) {
+                    Photographer.cachedMapIDs.add(mapViewNew.getId());
+                }
+
                 try {
                     byte[] pixels;
                     try {
@@ -70,14 +70,12 @@ public class RenderUtil {
                         }
                     }
 
-                    // Render frame
-                    boolean isBlackDye = heldItem.getType() == Material.BLACK_DYE;
-                    Color colorOuter = isBlackDye ? itemFrameColor : itemFrameColor.darker();
-                    Color colorInner = isBlackDye ? itemFrameColor.brighter() : itemFrameColor;
-                    drawFrame(mapCanvas,
-                            colorOuter,
-                            colorInner
-                    );
+                    if (itemFrameColor != null) {
+                        drawFrame(mapCanvas,
+                                itemFrameColor.darker(),
+                                itemFrameColor
+                        );
+                    }
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -110,5 +108,13 @@ public class RenderUtil {
                 }
             }
         }
+    }
+
+    public static int toBytes(Color color) {
+        return color.getRGB() & 0xFFFFFF;
+    }
+
+    public static Color toColor(int color) {
+        return new Color(color);
     }
 }

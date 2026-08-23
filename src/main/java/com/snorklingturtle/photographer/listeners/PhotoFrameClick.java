@@ -1,11 +1,9 @@
 package com.snorklingturtle.photographer.listeners;
 
-import com.snorklingturtle.photographer.ColorPalette;
 import com.snorklingturtle.photographer.Photographer;
 
 
 import com.snorklingturtle.photographer.Storage;
-import com.snorklingturtle.photographer.util.ByteArrayCompression;
 import com.snorklingturtle.photographer.util.InventoryUtil;
 import com.snorklingturtle.photographer.util.PhotoUtil;
 import com.snorklingturtle.photographer.util.RenderUtil;
@@ -19,20 +17,13 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.map.MapCanvas;
-import org.bukkit.map.MapPalette;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Map;
 import java.awt.Color;
-import java.util.zip.DataFormatException;
 
 import static java.util.Map.entry;
 
@@ -69,7 +60,8 @@ public class PhotoFrameClick implements Listener {
 
         // Is the player holding a valid dye
         ItemStack heldItem = player.getInventory().getItemInMainHand();
-        if (!DYES.containsKey(heldItem.getType())) return;
+        Color dye = DYES.get(heldItem.getType());
+        if (dye == null) return;
 
         ItemFrame frame = (ItemFrame) event.getRightClicked();
         ItemStack item = frame.getItem();
@@ -86,25 +78,34 @@ public class PhotoFrameClick implements Listener {
 
         try {
             // Get photo from database
-            Connection dbConnection = Storage.connect(plugin);
-            ResultSet mapsResultSet = Storage.getById(plugin, dbConnection, mapId);
+            Connection connection = Storage.connect(plugin);
+            ResultSet mapsResultSet = Storage.getById(plugin, connection, mapId);
 
             if (mapsResultSet.next()) {
                 byte[] mapDataSerialized = mapsResultSet.getBytes("data");
 
                 // Re-render with frame
-                MapRenderer renderer = RenderUtil.photoRender(mapDataSerialized, heldItem);
-                if (renderer != null) {
-                    mapView.addRenderer(renderer);
-                }
+                MapRenderer renderer = RenderUtil.photoRender(mapDataSerialized, DYES.get(heldItem.getType()), false);
+                mapView.addRenderer(renderer);
             }
 
-            Storage.disconnect(plugin, dbConnection);
+            Storage.disconnect(plugin, connection);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
 
+        // Save frame color
+        try {
+            Connection connection = Storage.connect(plugin);
+            Storage.updateFrameColor(plugin, connection, mapId, RenderUtil.toBytes(dye));
+            Storage.disconnect(plugin, connection);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Spawn particles
         try {
             Color particleColor = DYES.get(heldItem.getType());
             Particle.DustOptions dustOptions = new Particle.DustOptions(
@@ -131,8 +132,10 @@ public class PhotoFrameClick implements Listener {
             e.printStackTrace();
         }
 
+        // Play sound
         player.playSound(frame.getLocation(), Sound.ITEM_DYE_USE, 1.0F, 1.0F);
 
+        // Consume dye
         if (player.hasPermission("camera.consumedye")) {
             InventoryUtil.removeItemFromInventory(player, heldItem.getType(), 1);
         }
