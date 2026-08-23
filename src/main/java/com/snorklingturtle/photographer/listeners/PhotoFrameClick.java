@@ -8,6 +8,7 @@ import com.snorklingturtle.photographer.Storage;
 import com.snorklingturtle.photographer.util.ByteArrayCompression;
 import com.snorklingturtle.photographer.util.InventoryUtil;
 import com.snorklingturtle.photographer.util.PhotoUtil;
+import com.snorklingturtle.photographer.util.RenderUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -83,57 +84,20 @@ public class PhotoFrameClick implements Listener {
         for (MapRenderer renderer : mapView.getRenderers())
             mapView.removeRenderer(renderer);
 
-        Color dyeColor = DYES.get(heldItem.getType());
-        if (dyeColor == null) return;
-
         try {
             // Get photo from database
             Connection dbConnection = Storage.connect(plugin);
             ResultSet mapsResultSet = Storage.getById(plugin, dbConnection, mapId);
 
-            if (!mapsResultSet.next()) return;
-            byte[] mapDataSerialized = mapsResultSet.getBytes("data");
+            if (mapsResultSet.next()) {
+                byte[] mapDataSerialized = mapsResultSet.getBytes("data");
 
-            // Re-render with frame
-            mapView.addRenderer(new MapRenderer() {
-                @Override
-                public void render(@NonNull MapView mapViewNew, @NonNull MapCanvas mapCanvas, @NonNull Player player) {
-                    //if (!Photographer.cachedMapIDs.contains(mapViewNew.getId())) {
-                    //Photographer.cachedMapIDs.add(mapViewNew.getId());
-                    try {
-                        byte[] pixels;
-                        try {
-                            pixels = ByteArrayCompression.decompress(mapDataSerialized);
-                        } catch (DataFormatException ex) {
-                            throw new RuntimeException(ex);
-                        }
-
-                        mapView.setLocked(true);
-                        mapView.setTrackingPosition(false);
-                        mapView.setUnlimitedTracking(false);
-
-                        for (int py = 0; py < Photographer.MAP_SIZE; py++) {
-                            for (int px = 0; px < Photographer.MAP_SIZE; px++) {
-                                byte colorByte = pixels[py * Photographer.MAP_SIZE + px];
-                                mapCanvas.setPixelColor(px, py, ColorPalette.getColor(colorByte));
-                            }
-                        }
-
-                        // Render frame
-                        boolean isBlackDye = heldItem.getType() == Material.BLACK_DYE;
-                        Color colorOuter = isBlackDye ? dyeColor : dyeColor.darker();
-                        Color colorInner = isBlackDye ? dyeColor.brighter() : dyeColor;
-                        drawFrame(mapCanvas,
-                                colorOuter,
-                                colorInner
-                        );
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    //}
+                // Re-render with frame
+                MapRenderer renderer = RenderUtil.photoRender(mapDataSerialized, heldItem);
+                if (renderer != null) {
+                    mapView.addRenderer(renderer);
                 }
-            });
+            }
 
             Storage.disconnect(plugin, dbConnection);
         }
@@ -175,30 +139,5 @@ public class PhotoFrameClick implements Listener {
 
         // Cancel default action
         event.setCancelled(true);
-    }
-
-    private static void drawFrame(MapCanvas canvas, Color colorOuter, Color colorInner) {
-        byte frameColor = MapPalette.matchColor(colorOuter);
-        byte innerColor = MapPalette.matchColor(colorInner);
-        int thickness = 6;
-
-        for (int i = 0; i < Photographer.MAP_SIZE; i++) {
-            for (int t = 0; t < thickness; t++) {
-                // Outer edge
-                canvas.setPixel(i, t, frameColor);                  // top
-                canvas.setPixel(i, Photographer.MAP_SIZE - 1 - t, frameColor);  // bottom
-                canvas.setPixel(t, i, frameColor);                  // left
-                canvas.setPixel(Photographer.MAP_SIZE - 1 - t, i, frameColor);  // right
-
-                // Inner edge highlight
-                if (i < Photographer.MAP_SIZE - thickness)
-                {
-                    canvas.setPixel(i, thickness + t, innerColor);                 // top inner
-                    canvas.setPixel(i, Photographer.MAP_SIZE - 1 - thickness - t, innerColor); // bottom inner
-                    canvas.setPixel(thickness + t, i, innerColor);                 // left inner
-                    canvas.setPixel(Photographer.MAP_SIZE - 1 - thickness - t, i, innerColor); // right inner
-                }
-            }
-        }
     }
 }
