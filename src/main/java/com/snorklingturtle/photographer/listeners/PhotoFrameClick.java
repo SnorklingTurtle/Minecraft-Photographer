@@ -66,9 +66,6 @@ public class PhotoFrameClick implements Listener {
     public void frameClicked(PlayerInteractEntityEvent event) {
         Player player = event.getPlayer();
 
-        // Is player sneaking
-        //if (!player.isSneaking()) return;
-
         // Is the player holding a valid dye
         ItemStack heldItem = player.getInventory().getItemInMainHand();
         if (!DYES.containsKey(heldItem.getType())) return;
@@ -83,15 +80,11 @@ public class PhotoFrameClick implements Listener {
         MapView mapView = Bukkit.getMap(mapId);
         if (mapView == null) return;
 
-//        mapView.setTrackingPosition(false);
-//        for (MapRenderer renderer : mapView.getRenderers())
-//            mapView.removeRenderer(renderer);
+        for (MapRenderer renderer : mapView.getRenderers())
+            mapView.removeRenderer(renderer);
 
         Color dyeColor = DYES.get(heldItem.getType());
-        if (dyeColor == null) {
-            player.sendMessage(String.format("Couldn't find dye '%s'", heldItem.getType().name()));
-            return;
-        }
+        if (dyeColor == null) return;
 
         try {
             // Get photo from database
@@ -147,7 +140,7 @@ public class PhotoFrameClick implements Listener {
         catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         try {
             Color particleColor = DYES.get(heldItem.getType());
             Particle.DustOptions dustOptions = new Particle.DustOptions(
@@ -176,7 +169,9 @@ public class PhotoFrameClick implements Listener {
 
         player.playSound(frame.getLocation(), Sound.ITEM_DYE_USE, 1.0F, 1.0F);
 
-        InventoryUtil.removeItemFromInventory(player, heldItem.getType(), 1);
+        if (player.hasPermission("camera.consumedye")) {
+            InventoryUtil.removeItemFromInventory(player, heldItem.getType(), 1);
+        }
 
         // Cancel default action
         event.setCancelled(true);
