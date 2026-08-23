@@ -30,7 +30,7 @@ public class CameraCommand implements CommandExecutor {
             player.sendMessage("§7Right-click while holding a camera in your hand to take a photo.");
 
             player.sendMessage("§e/camera fov <value> §7- Change field of view (default = 70).");
-            player.sendMessage("§e/camera aa §7- Toggle anti-aliasing.");
+            player.sendMessage("§e/camera antialiasing §7- Toggle anti-aliasing.");
             player.sendMessage("§e/camera dithering §7- Toggle dithering.");
             player.sendMessage("§e/camera shading §7- Toggles shading of each side of a block.");
             player.sendMessage("§e/camera shadows §7- Toggles shadows depending on light level.");

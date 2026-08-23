@@ -15,6 +15,6 @@ public class CameraCommandTabCompleter implements TabCompleter {
         {
             return Arrays.asList("30", "40", "50", "60", "70", "80", "90", "100", "110");
         }
-        return Arrays.asList("help", "aa", "shading", "shadows", "dithering", "fov");
+        return Arrays.asList("help", "antialiasing", "shading", "shadows", "dithering", "fov");
     }
 }

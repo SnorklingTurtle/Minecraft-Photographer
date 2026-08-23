@@ -1,5 +1,6 @@
 settings:
   camera:
+    # Default camera properties
     properties:
       fieldOfView: 70
       shading: true
@@ -17,7 +18,7 @@ settings:
         - ITI
         - IRI
       enabled: true
-    # Per player cooldown between each capture. 20 = 1 second
+    # Per player cooldown between each capture. 20 ticks = 1 second
     cooldown: 20
     # Lower number is more performant
     renderDistance: 128

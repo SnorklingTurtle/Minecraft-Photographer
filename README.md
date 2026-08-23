@@ -32,7 +32,7 @@ Photos are stored in a SQLite database at `plugins/Minecraft-Photographer/photos
 ## Commands
 
 * `/camera help` - List of helpful commands.
-* `/camera aa` - Toggles anti-aliasing
+* `/camera antialiasing` - Toggles anti-aliasing
 * `/camera shading` - Toggles shading on blocks.
 * `/camera shadows` - Toggles shadows.
 * `/camera dithering` - Toggles dithering.
