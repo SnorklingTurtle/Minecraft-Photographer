@@ -134,7 +134,7 @@ public class CameraCommand implements CommandExecutor {
         }
 
         player.sendMessage("§cUnknown subcommand. Use §e/camera help§c.");
-        
+
         return true;
     }
 
