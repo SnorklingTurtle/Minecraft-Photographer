@@ -2,9 +2,7 @@ package com.snorklingturtle.photographer.util;
 
 import com.snorklingturtle.photographer.ColorPalette;
 import com.snorklingturtle.photographer.Photographer;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.map.MapCanvas;
 import org.bukkit.map.MapPalette;
 import org.bukkit.map.MapRenderer;
@@ -12,32 +10,10 @@ import org.bukkit.map.MapView;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.awt.*;
-import java.util.Map;
 import java.util.zip.DataFormatException;
 
-import static java.util.Map.entry;
 
 public class RenderUtil {
-
-    // TODO: Take color for mapping instead
-    public static final Map<Material, Color> DYES = Map.ofEntries(
-            entry(Material.WHITE_DYE, new Color(249, 255, 254)),
-            entry(Material.LIGHT_GRAY_DYE, new Color(157, 157, 151)),
-            entry(Material.GRAY_DYE, new Color(71, 79, 82)),
-            entry(Material.BLACK_DYE, new Color(29, 29, 33)),
-            entry(Material.BROWN_DYE, new Color(131, 84, 50)),
-            entry(Material.RED_DYE, new Color(176, 46, 38)),
-            entry(Material.ORANGE_DYE, new Color(249, 128, 29)),
-            entry(Material.YELLOW_DYE, new Color(254, 216, 61)),
-            entry(Material.LIME_DYE, new Color(128, 199, 31)),
-            entry(Material.GREEN_DYE, new Color(94, 124, 22)),
-            entry(Material.CYAN_DYE, new Color(22, 156, 156)),
-            entry(Material.LIGHT_BLUE_DYE, new Color(58, 179, 218)),
-            entry(Material.BLUE_DYE, new Color(60, 68, 170)),
-            entry(Material.PURPLE_DYE, new Color(137, 50, 184)),
-            entry(Material.MAGENTA_DYE, new Color(199, 78, 189)),
-            entry(Material.PINK_DYE, new Color(243, 139, 170))
-    );
 
     public static MapRenderer photoRender(byte[] mapDataSerialized) {
         return photoRender(mapDataSerialized, null, true);
