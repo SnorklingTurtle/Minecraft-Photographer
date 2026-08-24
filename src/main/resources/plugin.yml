@@ -20,8 +20,11 @@ permissions:
     description: Allows using the camera item.
     default: true
   camera.command:
-    description: Allows camera commands through /camera
+    description: Allows changing visual settings of photos through the /camera command.
     default: true
+  camera.admincommand:
+    description: Allows changing overall settings, such as color definitions, through the /camera command.
+    default: op
   camera.consumepaper:
     description: Consume paper when taking photos
     default: true
