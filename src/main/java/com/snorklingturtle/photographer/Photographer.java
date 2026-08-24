@@ -3,26 +3,21 @@ package com.snorklingturtle.photographer;
 import com.snorklingturtle.photographer.commands.CameraCommand;
 import com.snorklingturtle.photographer.commands.CameraCommandTabCompleter;
 import com.snorklingturtle.photographer.listeners.*;
-import com.snorklingturtle.photographer.util.ByteArrayCompression;
 import com.snorklingturtle.photographer.util.RenderUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
-import org.bukkit.map.MapCanvas;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import javax.naming.Name;
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.DataFormatException;
 
 public class Photographer extends JavaPlugin {
 
@@ -82,7 +77,7 @@ public class Photographer extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new CameraClick(this), this);
         getServer().getPluginManager().registerEvents(new PhotoCopy(this), this);
         getServer().getPluginManager().registerEvents(new PhotoDestroy(this), this);
-        getServer().getPluginManager().registerEvents(new PhotoFrameClick(this), this);
+        getServer().getPluginManager().registerEvents(new PhotoFrameDyeClick(this), this);
 
         // Commands
         PluginCommand cameraCommand = getCommand("camera");

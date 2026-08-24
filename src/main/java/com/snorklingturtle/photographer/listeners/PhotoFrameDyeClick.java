@@ -9,6 +9,7 @@ import com.snorklingturtle.photographer.util.InventoryUtil;
 import com.snorklingturtle.photographer.util.PhotoUtil;
 import com.snorklingturtle.photographer.util.RenderUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.ItemFrame;
@@ -25,21 +26,31 @@ import java.sql.ResultSet;
 import java.awt.Color;
 
 
-public class PhotoFrameClick implements Listener {
+public class PhotoFrameDyeClick implements Listener {
 
     private final Photographer plugin;
-    public PhotoFrameClick(Photographer plugin) { this.plugin = plugin; }
+    public PhotoFrameDyeClick(Photographer plugin) { this.plugin = plugin; }
+
+    private enum Tool {
+        SHEAR,
+        DYE
+    }
 
     @EventHandler
     public void frameClicked(PlayerInteractEntityEvent event) {
         Player player = event.getPlayer();
 
-        // Is the player holding a valid dye
         ItemStack heldItem = player.getInventory().getItemInMainHand();
-        if (!heldItem.getType().toString().toLowerCase().endsWith("_dye")) return;
 
-        Color dyeColor = ColorMapping.getBaseColor(heldItem.getType());
-        if (dyeColor == null) return;
+        // Is the player holding a valid dye
+        if (!heldItem.getType().toString().toLowerCase().endsWith("_dye") && heldItem.getType() != Material.SHEARS) return;
+
+        Tool tool = heldItem.getType() == Material.SHEARS ? Tool.SHEAR : Tool.DYE;
+
+        Color dyeColor = tool == Tool.SHEAR ? null : ColorMapping.getBaseColor(heldItem.getType());
+
+        // Return if tool is a dye, but the dye color is null
+        if (tool == Tool.DYE && dyeColor == null) return;
 
         ItemFrame frame = (ItemFrame) event.getRightClicked();
         ItemStack item = frame.getItem();
@@ -76,45 +87,51 @@ public class PhotoFrameClick implements Listener {
         // Save frame color
         try {
             Connection connection = Storage.connect(plugin);
-            Storage.updateFrameColor(plugin, connection, mapId, RenderUtil.toBytes(dyeColor));
+            Storage.updateFrameColor(plugin, connection, mapId, tool == Tool.SHEAR ? 0 : RenderUtil.toBytes(dyeColor));
             Storage.disconnect(plugin, connection);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
 
-        // Spawn particles
-        try {
-            Particle.DustOptions dustOptions = new Particle.DustOptions(
-                org.bukkit.Color.fromRGB(dyeColor.getRed(), dyeColor.getGreen(), dyeColor.getBlue()),
-                1.0F
-            );
-
-            int amount = 25;
-            for (int i = 0; i < amount; i++)
-            {
-                player.getWorld().spawnParticle(
-                    Particle.DUST,
-                    frame.getLocation(),
-                    1,
-                    Math.random() * .5,
-                    Math.random() * .5,
-                    Math.random() * .5,
-                    // Speed
-                    10.0F,
-                    dustOptions
+        if (tool == Tool.DYE) {
+            // Spawn particles
+            try {
+                Particle.DustOptions dustOptions = new Particle.DustOptions(
+                    org.bukkit.Color.fromRGB(dyeColor.getRed(), dyeColor.getGreen(), dyeColor.getBlue()),
+                    1.0F
                 );
+
+                int amount = 25;
+                for (int i = 0; i < amount; i++)
+                {
+                    player.getWorld().spawnParticle(
+                        Particle.DUST,
+                        frame.getLocation(),
+                        1,
+                        Math.random() * .5,
+                        Math.random() * .5,
+                        Math.random() * .5,
+                        // Speed
+                        10.0F,
+                        dustOptions
+                    );
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+
+            // Use dye sound
+            player.playSound(frame.getLocation(), Sound.ITEM_DYE_USE, 1.0F, 1.0F);
+
+            // Consume dye
+            if (player.hasPermission("camera.consumedye")) {
+                InventoryUtil.removeItemFromInventory(player, heldItem.getType(), 1);
+            }
         }
-
-        // Play sound
-        player.playSound(frame.getLocation(), Sound.ITEM_DYE_USE, 1.0F, 1.0F);
-
-        // Consume dye
-        if (player.hasPermission("camera.consumedye")) {
-            InventoryUtil.removeItemFromInventory(player, heldItem.getType(), 1);
+        else {
+            // Remove frame sound
+            player.playSound(frame.getLocation(), Sound.ENTITY_SHEEP_SHEAR, 1.0F, 1.0F);
         }
 
         // Cancel default action
