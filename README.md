@@ -71,21 +71,21 @@ world. Map IDs will no longer match those in the database, which might end up in
 
 ## Todo
 
-* [Idea] Make a tool that easily grabs colors of new blocks. E.g. look at block and do `/camera pick-color`.
-* [Optimize] Check color mapping
-* [Idea] Better rendering of water. Trace through, but add blue tint.
 * [Idea] Framing
+* [Optimize] Check color mapping
+* [Bug] Better rendering of glass
 * [Idea] Toggle sky gradient
 * [Fix] [Skull rendering on Geyser](https://geysermc.org/wiki/geyser/custom-skulls/)
 * [Idea] Add a `/camera silly` command - to take silly photos
 * [Idea] Add option to change Overworld, Nether and End sky colors.
 * [Idea] Use getBlockData().getMapColor() and fallback to color-mapping.config only if needed
-* [Idea] Store camera properties per camera
 * [Optimize] Can converting colors from string be improved
-
 
 ## Done
 
+* [Idea] Store camera properties per camera
+* [Idea] Make a tool that easily grabs colors of new blocks. E.g. look at block and do `/camera pick-color`.
+* [Idea] Better rendering of water. Trace through, but add blue tint.
 * [Bug] Photos are distorted when looking up/down.
 * [Idea] Prettier sky
 * [Fix] Keep track of map IDs and when players copy/destroy maps
