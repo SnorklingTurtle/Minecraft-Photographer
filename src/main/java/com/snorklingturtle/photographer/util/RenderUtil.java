@@ -100,27 +100,27 @@ public class RenderUtil {
         };
 
         for (int i = 0; i < Photographer.MAP_SIZE; i++) {
-            byte topColor    = tintedFrameColor(colorOuter, pattern[i % pattern.length]);
-            byte bottomColor = tintedFrameColor(colorOuter, pattern[(i + 16) % pattern.length]);
+            byte topColor    = tintedFrameColor(colorOuter, pattern[(i + 32) % pattern.length]);
+            byte bottomColor = tintedFrameColor(colorOuter, pattern[(i + 64) % pattern.length]);
 
             for (int t = 0; t < thickness; t++) {
                 canvas.setPixel(i, t, topColor);
                 canvas.setPixel(i, Photographer.MAP_SIZE - 1 - t, bottomColor);
 
                 if (i >= thickness && i < Photographer.MAP_SIZE - thickness) {
-                    byte leftColor   = tintedFrameColor(colorOuter, pattern[(i + 32) % pattern.length]);
-                    byte rightColor  = tintedFrameColor(colorOuter, pattern[(i + 64) % pattern.length]);
+                    byte leftColor   = tintedFrameColor(colorOuter, pattern[(i + 128) % pattern.length]);
+                    byte rightColor  = tintedFrameColor(colorOuter, pattern[(i + 160) % pattern.length]);
                     canvas.setPixel(t, i, leftColor);
                     canvas.setPixel(Photographer.MAP_SIZE - 1 - t, i, rightColor);
 
-                    byte topInner    = tintedFrameColor(colorInner, pattern[i % pattern.length]);
-                    byte bottomInner = tintedFrameColor(colorInner, pattern[(i + 16) % pattern.length]);
+                    byte topInner    = tintedFrameColor(colorInner, pattern[(i + 32) % pattern.length]);
+                    byte bottomInner = tintedFrameColor(colorInner, pattern[(i + 64) % pattern.length]);
                     canvas.setPixel(i, thickness + t, topInner);
                     canvas.setPixel(i, Photographer.MAP_SIZE - 1 - thickness - t, bottomInner);
 
                     if (i >= (thickness * 2) && i < Photographer.MAP_SIZE - (thickness * 2)) {
-                        byte leftInner   = tintedFrameColor(colorInner, pattern[(i + 32) % pattern.length]);
-                        byte rightInner  = tintedFrameColor(colorInner, pattern[(i + 64) % pattern.length]);
+                        byte leftInner   = tintedFrameColor(colorInner, pattern[(i + 128) % pattern.length]);
+                        byte rightInner  = tintedFrameColor(colorInner, pattern[(i + 160) % pattern.length]);
                         canvas.setPixel(thickness + t, i, leftInner);
                         canvas.setPixel(Photographer.MAP_SIZE - 1 - thickness - t, i, rightInner);
                     }
