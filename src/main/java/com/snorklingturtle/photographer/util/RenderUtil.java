@@ -49,7 +49,7 @@ public class RenderUtil {
                     if (itemFrameColor != null) {
                         drawFrame(mapCanvas,
                                 itemFrameColor.darker(),
-                                itemFrameColor
+                                itemFrameColor.darker().darker()
                         );
                     }
 

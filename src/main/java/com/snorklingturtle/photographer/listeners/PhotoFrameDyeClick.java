@@ -42,7 +42,7 @@ public class PhotoFrameDyeClick implements Listener {
 
         ItemStack heldItem = player.getInventory().getItemInMainHand();
 
-        // Is the player holding a valid dye
+        // Is the player holding either dye or shears?
         if (!heldItem.getType().toString().toLowerCase().endsWith("_dye") && heldItem.getType() != Material.SHEARS) return;
 
         Tool tool = heldItem.getType() == Material.SHEARS ? Tool.SHEAR : Tool.DYE;
