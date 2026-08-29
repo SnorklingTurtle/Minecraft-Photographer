@@ -56,34 +56,89 @@ public class RenderUtil {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                //}
             }
         };
     }
 
     private static void drawFrame(MapCanvas canvas, Color colorOuter, Color colorInner) {
-        byte frameColor = MapPalette.matchColor(colorOuter);
-        byte innerColor = MapPalette.matchColor(colorInner);
-        int thickness = 6;
+        int thickness = 8;
+
+        double[] pattern = {
+                0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90,
+                0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95,
+                1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00,
+                1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10,
+                1.15, 1.15, 1.15, 1.15, 1.15, 1.15, 1.15, 1.15,
+                1.15, 1.15, 1.15, 1.15, 1.15, 1.15, 1.15, 1.15,
+                1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10,
+                1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05,
+                1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00,
+                0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95,
+                0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90,
+                0.85, 0.85, 0.85, 0.85, 0.85, 0.85, 0.85, 0.85,
+                0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90,
+                0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95,
+                1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00,
+                1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05,
+
+                1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10,
+                1.15, 1.15, 1.15, 1.15, 1.15, 1.15, 1.15, 1.15,
+                1.15, 1.15, 1.15, 1.15, 1.15, 1.15, 1.15, 1.15,
+                1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10,
+                1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00,
+                0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95,
+                0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90,
+                0.85, 0.85, 0.85, 0.85, 0.85, 0.85, 0.85, 0.85,
+                0.85, 0.85, 0.85, 0.85, 0.85, 0.85, 0.85, 0.85,
+                0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90,
+                0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95,
+                1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05,
+                1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10,
+                1.15, 1.15, 1.15, 1.15, 1.15, 1.15, 1.15, 1.15,
+                1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10,
+                1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05
+        };
 
         for (int i = 0; i < Photographer.MAP_SIZE; i++) {
-            for (int t = 0; t < thickness; t++) {
-                // Outer edge
-                canvas.setPixel(i, t, frameColor);                  // top
-                canvas.setPixel(i, Photographer.MAP_SIZE - 1 - t, frameColor);  // bottom
-                canvas.setPixel(t, i, frameColor);                  // left
-                canvas.setPixel(Photographer.MAP_SIZE - 1 - t, i, frameColor);  // right
+            byte topColor    = tintedFrameColor(colorOuter, pattern[i % pattern.length]);
+            byte bottomColor = tintedFrameColor(colorOuter, pattern[(i + 16) % pattern.length]);
 
-                // Inner edge highlight
-                if (i < Photographer.MAP_SIZE - thickness)
-                {
-                    canvas.setPixel(i, thickness + t, innerColor);                 // top inner
-                    canvas.setPixel(i, Photographer.MAP_SIZE - 1 - thickness - t, innerColor); // bottom inner
-                    canvas.setPixel(thickness + t, i, innerColor);                 // left inner
-                    canvas.setPixel(Photographer.MAP_SIZE - 1 - thickness - t, i, innerColor); // right inner
+            for (int t = 0; t < thickness; t++) {
+                canvas.setPixel(i, t, topColor);
+                canvas.setPixel(i, Photographer.MAP_SIZE - 1 - t, bottomColor);
+
+                if (i >= thickness && i < Photographer.MAP_SIZE - thickness) {
+                    byte leftColor   = tintedFrameColor(colorOuter, pattern[(i + 32) % pattern.length]);
+                    byte rightColor  = tintedFrameColor(colorOuter, pattern[(i + 64) % pattern.length]);
+                    canvas.setPixel(t, i, leftColor);
+                    canvas.setPixel(Photographer.MAP_SIZE - 1 - t, i, rightColor);
+
+                    byte topInner    = tintedFrameColor(colorInner, pattern[i % pattern.length]);
+                    byte bottomInner = tintedFrameColor(colorInner, pattern[(i + 16) % pattern.length]);
+                    canvas.setPixel(i, thickness + t, topInner);
+                    canvas.setPixel(i, Photographer.MAP_SIZE - 1 - thickness - t, bottomInner);
+
+                    if (i >= (thickness * 2) && i < Photographer.MAP_SIZE - (thickness * 2)) {
+                        byte leftInner   = tintedFrameColor(colorInner, pattern[(i + 32) % pattern.length]);
+                        byte rightInner  = tintedFrameColor(colorInner, pattern[(i + 64) % pattern.length]);
+                        canvas.setPixel(thickness + t, i, leftInner);
+                        canvas.setPixel(Photographer.MAP_SIZE - 1 - thickness - t, i, rightInner);
+                    }
                 }
             }
         }
+    }
+
+    private static byte tintedFrameColor(Color base, double brightness) {
+        return MapPalette.matchColor(new Color(
+                clamp((int)(base.getRed()   * brightness)),
+                clamp((int)(base.getGreen() * brightness)),
+                clamp((int)(base.getBlue()  * brightness))
+        ));
+    }
+
+    private static int clamp(int v) {
+        return Math.max(0, Math.min(255, v));
     }
 
     public static int toBytes(Color color) {
