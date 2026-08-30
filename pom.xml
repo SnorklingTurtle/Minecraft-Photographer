@@ -35,6 +35,7 @@
     </dependencies>
 
     <build>
+        <finalName>photographer</finalName>
         <plugins>
             <!-- Shade plugin not needed since we have no runtime deps,
                  but included for easy extension later -->
