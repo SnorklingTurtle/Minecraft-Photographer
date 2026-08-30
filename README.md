@@ -8,7 +8,7 @@ This is a server side only plugin.
 ## Features 
 
 * Players can change how photos are rendered through commands, e.g. shadows, shading, dithering (See more `/camera help`).
-* Players can add a frame to a photo by using any dye color on it. A frame can be removed again by shearing the photo.
+* After putting a photo in an item frame, players can add a colored frame by using any dye on it. A frame can be removed again by shearing the item frame.
 * Lots of admin settings such as: 
   * Camera skin
   * Render distance
